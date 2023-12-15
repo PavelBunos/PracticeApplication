@@ -1,4 +1,4 @@
-var userApi = Vue.resource('/users/')
+var userApi = Vue.resource('/users')
 
 Vue.component('user-row', {
     props: ['user'],
