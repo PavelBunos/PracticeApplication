@@ -3,7 +3,6 @@ package bunos.study.practiceapplication.controllers;
 import bunos.study.practiceapplication.models.User;
 import bunos.study.practiceapplication.services.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
