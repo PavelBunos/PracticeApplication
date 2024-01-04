@@ -1,12 +1,18 @@
 package bunos.study.practiceapplication.services;
 
 import bunos.study.practiceapplication.models.User;
+import bunos.study.practiceapplication.repositories.RoleRepository;
 import bunos.study.practiceapplication.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Primary
 @Service
@@ -35,7 +41,31 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    public User findByUsername(String username) {
+        return userRepository
+                .findAll()
+                .stream()
+                .filter(
+                        user -> user
+                                .getUsername()
+                                .equals(username)
+                )
+                .findFirst()
+                .get();
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = findByUsername(username);
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(), user.getPassword(), user.getRoles().stream().map(
+                        role -> new SimpleGrantedAuthority(role.getName())
+                ).collect(Collectors.toList())
+        );
     }
 }

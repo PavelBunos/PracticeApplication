@@ -1,10 +1,19 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /demo
+jwt:
+  secret: 984hg493gh0439rthr0429uruj2309yh937gc763fe87t3f89723gf
+  lifetime: 10m
 spring:
   datasource:
-    url: jdbc:postgresql://localhost/practiceApp
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/practiceApp
     username: postgres
     password: qwerty
   jpa:
     show-sql: true
-    generate-ddl: false
+    generate-ddl: true
     hibernate:
       ddl-auto: create-drop
+
