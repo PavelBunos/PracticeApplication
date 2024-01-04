@@ -2,8 +2,6 @@ package bunos.study.practiceapplication.config;
 
 import bunos.study.practiceapplication.services.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -33,9 +31,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/", "/home").permitAll()
-                        .requestMatchers("/users").authenticated()
-                        .requestMatchers("/admin-panel").hasRole("ADMIN")
+                        //.requestMatchers("/", "/home", "/auth").permitAll()
+                        //.requestMatchers("/users").authenticated()
+                        //.requestMatchers("/admin-panel").hasRole("ADMIN")
                         .anyRequest().permitAll()
                 )
                 .formLogin((form) -> form
@@ -54,10 +52,10 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
-        ApplicationContext context = new AnnotationConfigApplicationContext("bunos.study.practiceapplication");
+        //ApplicationContext context = new AnnotationConfigApplicationContext("bunos.study.practiceapplication");
 
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setPasswordEncoder(context.getBean("passwordEncoder", BCryptPasswordEncoder.class));
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         daoAuthenticationProvider.setUserDetailsService(userService);
         return daoAuthenticationProvider;
     }
