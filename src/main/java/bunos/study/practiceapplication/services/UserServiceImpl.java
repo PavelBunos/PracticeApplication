@@ -64,8 +64,8 @@ public class UserServiceImpl implements UserService {
         User user = findByUsername(username);
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(), user.getPassword(), user.getRoles().stream().map(
-                        role -> new SimpleGrantedAuthority(role.getName())
-                ).collect(Collectors.toList())
+                role -> new SimpleGrantedAuthority(role.getName())
+        ).collect(Collectors.toList())
         );
     }
 }

@@ -30,10 +30,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.disable())
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests
-                        //.requestMatchers("/", "/home", "/auth").permitAll()
-                        //.requestMatchers("/users").authenticated()
-                        //.requestMatchers("/admin-panel").hasRole("ADMIN")
+                        .requestMatchers("/", "/home", "/auth").permitAll()
+                        .requestMatchers("/users").authenticated()
+                        .requestMatchers("/admin-panel").hasRole("ADMIN")
                         .anyRequest().permitAll()
                 )
                 .formLogin((form) -> form
@@ -52,8 +54,6 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
-        //ApplicationContext context = new AnnotationConfigApplicationContext("bunos.study.practiceapplication");
-
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         daoAuthenticationProvider.setUserDetailsService(userService);
@@ -75,7 +75,7 @@ public class SecurityConfig {
         UserDetails user =
                 User.withDefaultPasswordEncoder()
                         .username("user")
-                        .password("password")
+                        .password("pass")
                         .roles("ADMIN")
                         .build();
 
