@@ -1,4 +1,4 @@
-package bunos.study.practiceapplication.controllers;
+package bunos.study.practiceapplication.controllers.rest;
 
 import bunos.study.practiceapplication.dtos.JwtRequest;
 import bunos.study.practiceapplication.dtos.JwtResponse;
