@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/", "/home", "/auth").permitAll()
+                        .requestMatchers("/", "/home", "/auth", "/migration/start", "/migration/drop").permitAll()
                         .requestMatchers("/users").authenticated()
                         .requestMatchers("/admin-panel").hasRole("ADMIN")
                         .anyRequest().permitAll()

@@ -1,12 +1,14 @@
 package bunos.study.practiceapplication.models.migration;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name="t_test_entity")
+@Data
 public class TestEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.TABLE)
     @Column(name = "te_id")
     private long id;
 

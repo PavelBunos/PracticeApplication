@@ -2,6 +2,8 @@
 base url: /practiceApp
 | type | request |
 | ----------- | ----------- |
+| GET    | /migration/start  |
+| GET    | /migration/drop   |
 | GET    | /users   |
 | GET    | /users/{id} |
 | POST    | /users/add |
