@@ -1,4 +1,4 @@
-package bunos.study.practiceapplication.controllers;
+package bunos.study.practiceapplication.controllers.rest;
 
 import bunos.study.practiceapplication.models.User;
 import bunos.study.practiceapplication.services.UserService;
@@ -33,7 +33,7 @@ public class UserController {
         return userService.getById(id);
     }
 
-    @GetMapping("/")
+    @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
