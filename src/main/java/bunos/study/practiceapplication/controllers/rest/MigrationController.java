@@ -16,9 +16,4 @@ public class MigrationController {
     public void migrate() {
         migrationService.migrate();
     }
-
-    @GetMapping("/drop")
-    public void drop() {
-        migrationService.dropDestinationData();
-    }
 }

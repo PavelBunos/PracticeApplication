@@ -22,6 +22,7 @@ public class MigrationServiceImpl implements MigrationService {
 
     @Transactional(value = "toTransactionManager")
     public void migrate() {
+        dropDestinationData();
         saveAllToSource(getAllFromSource());
     }
 
