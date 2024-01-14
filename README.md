@@ -4,6 +4,7 @@ base url: /practiceApp
 | ----------- | ----------- |
 | GET    | /migration/start  |
 | GET    | /backup/simple/start |
+| GET    | /dump/create |
 | GET    | /users   |
 | GET    | /users/{id} |
 | POST    | /users/add |
