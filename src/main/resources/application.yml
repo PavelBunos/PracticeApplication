@@ -27,4 +27,10 @@ sources:
     username: postgres
     password: qwerty
     driver-class-name: org.postgresql.Driver
+dump:
+  pg_dump:
+    program:
+      path: D:/Programms/PostgreSQL/16/bin/pg_dump.exe
+  file:
+    path: D:/dump
 

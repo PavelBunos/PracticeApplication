@@ -12,32 +12,32 @@ import java.util.List;
 @Service
 public class BackupServiceImpl implements BackupService {
     @PersistenceContext(unitName = "to")
-    private EntityManager historicEntityManager;
+    private EntityManager backupDatabaseEntityManager;
 
     @PersistenceContext(unitName = "from")
-    private EntityManager baseEntityManager;
+    private EntityManager currentDatabaseEntityManager;
 
-    public List<TestEntity> getAllFromHistoric() {
-        return historicEntityManager.createQuery("SELECT e FROM TestEntity e", TestEntity.class).getResultList();
+    public List<TestEntity> getAllFromBackupDB() {
+        return backupDatabaseEntityManager.createQuery("SELECT e FROM TestEntity e", TestEntity.class).getResultList();
     }
 
     @Modifying
     @Transactional(transactionManager = "fromTransactionManager")
     public void dropBaseData() {
-        baseEntityManager.createQuery("DELETE FROM TestEntity");
+        currentDatabaseEntityManager.createQuery("DELETE FROM TestEntity");
     }
 
     @Modifying
     @Transactional(transactionManager = "fromTransactionManager")
     public void saveAllToBase(List<TestEntity> data) {
-        data.forEach(baseEntityManager::merge);
+        data.forEach(currentDatabaseEntityManager::merge);
     }
 
     @Override
     @Transactional(transactionManager = "fromTransactionManager")
     @Modifying
     public void startBackup() {
-        List<TestEntity> data = getAllFromHistoric();
+        List<TestEntity> data = getAllFromBackupDB();
         dropBaseData();
         saveAllToBase(data);
     }
