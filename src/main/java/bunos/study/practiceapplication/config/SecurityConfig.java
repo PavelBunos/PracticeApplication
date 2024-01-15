@@ -37,7 +37,7 @@ public class SecurityConfig {
                                 "/home",
                                 "/auth",
                                 "/migration/start",
-                                "/backup/simple/start",
+                                "/migration/source/restore",
                                 "/dump/create").permitAll()
                         .requestMatchers("/users").authenticated()
                         .requestMatchers("/admin-panel").hasRole("ADMIN")

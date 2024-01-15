@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class BackupServiceImpl implements BackupService {
+public class RestoreServiceImpl implements RestoreService {
     @PersistenceContext(unitName = "to")
     private EntityManager backupDatabaseEntityManager;
 
@@ -36,7 +36,7 @@ public class BackupServiceImpl implements BackupService {
     @Override
     @Transactional(transactionManager = "fromTransactionManager")
     @Modifying
-    public void startBackup() {
+    public void migrationRestore() {
         List<TestEntity> data = getAllFromBackupDB();
         dropBaseData();
         saveAllToBase(data);
