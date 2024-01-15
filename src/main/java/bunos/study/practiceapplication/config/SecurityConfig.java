@@ -38,7 +38,9 @@ public class SecurityConfig {
                                 "/auth",
                                 "/migration/start",
                                 "/migration/source/restore",
-                                "/dump/create").permitAll()
+                                "/dump/create",
+                                "/dump/restore/to/{dumpName}"
+                        ).permitAll()
                         .requestMatchers("/users").authenticated()
                         .requestMatchers("/admin-panel").hasRole("ADMIN")
                         .anyRequest().permitAll()

@@ -3,8 +3,9 @@ base url: /practiceApp
 | type | request |
 | ----------- | ----------- |
 | GET    | /migration/start  |
-| GET    | /backup/simple/start |
+| GET    | /migration/source/restore |
 | GET    | /dump/create |
+| GET    | /dump/restore/to/{dumpName} |
 | GET    | /users   |
 | GET    | /users/{id} |
 | POST    | /users/add |

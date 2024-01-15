@@ -30,7 +30,7 @@ sources:
 dump:
   pg_dump:
     program:
-      path: D:/Programms/PostgreSQL/16/bin/pg_dump.exe
-  file:
+      path: D:/Programms/PostgreSQL/16/bin/
+  files:
     path: D:/dump
 
