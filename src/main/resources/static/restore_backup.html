@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>App | Копирование и восстановление</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+    <h1>Копирование и восстановление</h1>
+
+    <div class="backup-section">
+        <h2>Настройки копирования</h2>
+        <label for="backupArguments">Аргументы:</label>
+        <input v-model="backupArguments" id="backupArguments" type="text" placeholder="Введите аргументы" />
+
+        <label for="backupPath">Путь сохранения:</label>
+        <input v-model="backupPath" id="backupPath" type="text" placeholder="Введите путь сохранения" />
+
+        <button @click="startBackup">Начать копирование</button>
+    </div>
+
+    <div class="restore-section">
+        <h2>Настройки восстановления</h2>
+        <label for="restoreArguments">Аргументы:</label>
+        <input v-model="restoreArguments" id="restoreArguments" type="text" placeholder="Введите аргументы" />
+
+        <label for="restorePath">Путь к бэкапам:</label>
+        <input v-model="restorePath" id="restorePath" type="text" placeholder="Введите путь к бэкапам" />
+
+        <button @click="updateBackupList">Обновить список файлов</button>
+
+        <label for="selectedBackup">Выберите бэкап:</label>
+        <select v-model="selectedBackup" id="selectedBackup">
+            <option v-for="backup in backupList" :key="backup">{{ backup }}</option>
+        </select>
+
+        <button @click="startRestore">Начать восстановление</button>
+    </div>
+</div>
+</body>
+<script src="https://unpkg.com/vue@2.7.14/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.3"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script type="module">
+    const axiosInstance = window.axios;
+
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                backupArguments: '',
+                backupPath: '',
+
+                restoreArguments: '',
+                restorePath: '',
+                backupList: [],
+                selectedBackup: ''
+            };
+        },
+        methods: {
+            startBackup() {
+                console.log('Начато копирование с аргументами:', this.backupArguments);
+                console.log('Путь сохранения:', this.backupPath);
+
+                let dumpData = {
+                    path: this.backupPath,
+                    dumpFileName: "",
+                    args: this.backupArguments
+                }
+
+                axios.post(`/practiceApp/dump/create`, dumpData);
+            },
+            updateBackupList() {
+                console.log('Обновлен список бэкапов из пути:', this.restorePath);
+                axios.get(`/practiceApp/dump/backups?path=${encodeURIComponent(this.restorePath)}`)
+                  .then(response => {
+                    this.backupList = response.data;
+                  })
+                  .catch(error => {
+                    console.error('Ошибка при получении списка бэкапов:', error);
+                  });
+            },
+            startRestore() {
+                console.log('Запущено восстановление с аргументами:', this.restoreArguments);
+                console.log('Выбранный бэкап:', this.selectedBackup);
+
+                let restoreData = {
+                    path: this.restorePath,
+                    dumpFileName: this.selectedBackup,
+                    args: this.restoreArguments
+                }
+
+                axios.post(`/practiceApp/dump/restore/to`, restoreData);
+            }
+        }
+    });
+</script>
+</html>

@@ -18,4 +18,9 @@ public class MvcController {
     public String migration() {
         return "migration.html";
     }
+
+    @GetMapping("/backup")
+    public String backup() {
+        return "restore_backup.html";
+    }
 }
