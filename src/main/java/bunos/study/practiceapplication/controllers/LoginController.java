@@ -1,6 +1,6 @@
 package bunos.study.practiceapplication.controllers;
 
-import bunos.study.practiceapplication.models.User;
+import bunos.study.practiceapplication.models.security.User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

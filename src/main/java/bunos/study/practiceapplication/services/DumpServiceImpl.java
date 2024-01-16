@@ -2,6 +2,7 @@ package bunos.study.practiceapplication.services;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class DumpServiceImpl implements DumpService {
 
@@ -28,7 +30,7 @@ public class DumpServiceImpl implements DumpService {
     private String dbUrl;
 
     @Value("${dump.files.path}")
-    private String dumpFilePath;
+    private String dumpFilesPath;
 
     @Value("${dump.pg_dump.program.path}")
     private String pgDumpPath;
@@ -42,9 +44,9 @@ public class DumpServiceImpl implements DumpService {
         builder.append(currentDate.toString().replace(' ', '_').replace(':', '-'));
         String dumpFileName = builder.toString();
 
-        String command =  pgDumpPath + "pg_dump.exe --dbname=postgresql://" + dbUsername + ":" + dbPassword + "@" + urlData.get("host") + ":" + urlData.get("port") + "/" + urlData.get("database") + " -F c > " + dumpFilePath + "/" + dumpFileName + ".sql";
+        String command = pgDumpPath + "pg_dump.exe --dbname=postgresql://" + dbUsername + ":" + dbPassword + "@" + urlData.get("host") + ":" + urlData.get("port") + "/" + urlData.get("database") + " -F c > " + dumpFilesPath + "/" + dumpFileName + ".sql";
 
-        String cmdFilePath = dumpFilePath + "/" + dumpFileName + ".cmd";
+        String cmdFilePath = dumpFilesPath + "/" + dumpFileName + ".cmd";
         createCommandFile(cmdFilePath, command);
 
         ProcessBuilder processBuilder = new ProcessBuilder(cmdFilePath);
@@ -52,32 +54,36 @@ public class DumpServiceImpl implements DumpService {
         int exitCode = process.waitFor();
 
         if (exitCode == 0) {
-            System.out.println("Dump created successfully.");
+            log.info("Dump created successfully.");
         } else {
-            System.err.println("Error creating dump. Exit code: " + exitCode);
+            log.error("Error while creating a dump. Exit code: {}", exitCode);
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    System.err.println(line);
+                    log.error(line);
                 }
             }
         }
 
         if (!new java.io.File(cmdFilePath).delete()) {
-            System.err.println("Error while deleting a command file.");
+            log.error("Error while deleting a command file.");
         }
     }
 
     @Override
     @Transactional
-    public void restore(String dumpName) throws IOException, InterruptedException {
+    public void restore(String dumpName, String args) throws IOException, InterruptedException {
         HashMap<String, String> urlData = getUrlData(dbUrl);
 
-        String command =  pgDumpPath + "pg_restore.exe --dbname=postgresql://" + dbUsername + ":" + dbPassword + "@" + urlData.get("host") + ":" + urlData.get("port") + "/" + urlData.get("database") + " " + dumpFilePath + "/" + dumpName + ".sql";
+        StringBuilder command = new StringBuilder();
 
-        String cmdFilePath = dumpFilePath + "/" + dumpName + ".cmd";
-        createCommandFile(cmdFilePath, command);
+        command.append(pgDumpPath + "pg_restore.exe --dbname=postgresql://" + dbUsername + ":" + dbPassword + "@" + urlData.get("host") + ":" + urlData.get("port") + "/" + urlData.get("database") + " ");
+        command.append(args);
+        command.append(" " + dumpFilesPath + "/" + dumpName + ".sql");
+
+        String cmdFilePath = dumpFilesPath + "/" + dumpName + ".cmd";
+        createCommandFile(cmdFilePath, command.toString());
 
         System.out.println(command);
 
@@ -90,9 +96,9 @@ public class DumpServiceImpl implements DumpService {
         int exitCode = process.waitFor();
 
         if (exitCode == 0) {
-            System.out.println("A database restored to " + dumpName + " successfully.");
+            log.info("A database restored to {} successfully.", dumpName);
         } else {
-            System.err.println("An error occurred while restoring a database. Exit code: " + exitCode);
+            log.error("Error while restoring from a dump. Exit code: {}", exitCode);
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
                 String line;
@@ -103,7 +109,7 @@ public class DumpServiceImpl implements DumpService {
         }
 
         if (!new java.io.File(cmdFilePath).delete()) {
-            System.err.println("Error while deleting a command file.");
+            log.error("Error while deleting a command file.");
         }
     }
 

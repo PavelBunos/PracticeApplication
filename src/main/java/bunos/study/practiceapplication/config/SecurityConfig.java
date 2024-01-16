@@ -41,7 +41,7 @@ public class SecurityConfig {
                                 "/dump/create",
                                 "/dump/restore/to/{dumpName}"
                         ).permitAll()
-                        .requestMatchers("/users").authenticated()
+                        //.requestMatchers("/users").authenticated()
                         .requestMatchers("/admin-panel").hasRole("ADMIN")
                         .anyRequest().permitAll()
                 )

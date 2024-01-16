@@ -1,11 +1,10 @@
-package bunos.study.practiceapplication.models;
+package bunos.study.practiceapplication.models.security;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.hibernate.sql.ast.tree.expression.Collation;
 
 import java.util.Collection;
 
@@ -24,7 +23,7 @@ public class User {
     @NonNull
     private String password;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name="users_roles",
             joinColumns = @JoinColumn(name = "user_id"),

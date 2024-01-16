@@ -3,12 +3,14 @@ package bunos.study.practiceapplication.services;
 import bunos.study.practiceapplication.models.migration.TestEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class RestoreServiceImpl implements RestoreService {
     @PersistenceContext(unitName = "to")
@@ -40,5 +42,6 @@ public class RestoreServiceImpl implements RestoreService {
         List<TestEntity> data = getAllFromBackupDB();
         dropBaseData();
         saveAllToBase(data);
+        log.info("Data restored from migration database!");
     }
 }

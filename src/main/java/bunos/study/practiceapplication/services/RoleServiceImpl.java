@@ -1,6 +1,6 @@
 package bunos.study.practiceapplication.services;
 
-import bunos.study.practiceapplication.models.Role;
+import bunos.study.practiceapplication.models.security.Role;
 import bunos.study.practiceapplication.repositories.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

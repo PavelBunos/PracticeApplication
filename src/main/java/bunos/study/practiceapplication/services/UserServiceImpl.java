@@ -1,7 +1,6 @@
 package bunos.study.practiceapplication.services;
 
-import bunos.study.practiceapplication.models.User;
-import bunos.study.practiceapplication.repositories.RoleRepository;
+import bunos.study.practiceapplication.models.security.User;
 import bunos.study.practiceapplication.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

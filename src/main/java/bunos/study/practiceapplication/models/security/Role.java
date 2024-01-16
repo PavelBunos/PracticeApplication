@@ -1,4 +1,4 @@
-package bunos.study.practiceapplication.models;
+package bunos.study.practiceapplication.models.security;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

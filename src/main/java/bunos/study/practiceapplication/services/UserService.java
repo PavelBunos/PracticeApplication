@@ -1,6 +1,6 @@
 package bunos.study.practiceapplication.services;
 
-import bunos.study.practiceapplication.models.User;
+import bunos.study.practiceapplication.models.security.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;

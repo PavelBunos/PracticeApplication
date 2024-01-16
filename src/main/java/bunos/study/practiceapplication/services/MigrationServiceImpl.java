@@ -4,12 +4,14 @@ import bunos.study.practiceapplication.models.migration.TestEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class MigrationServiceImpl implements MigrationService {
@@ -42,5 +44,6 @@ public class MigrationServiceImpl implements MigrationService {
     @Transactional(value = "toTransactionManager")
     public void saveAllToSource(List<TestEntity> data) {
         data.forEach(destinationEntityManager::merge);
+        log.info("Data migration done!");
     }
 }

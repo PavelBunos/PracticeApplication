@@ -2,11 +2,10 @@ package bunos.study.practiceapplication.controllers.rest;
 
 import bunos.study.practiceapplication.services.DumpService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 @RequestMapping("/dump")
@@ -19,16 +18,16 @@ public class DumpController {
         try {
             dumpService.createDump();
         } catch (Exception e) {
-            System.out.println("Dump process failure: " + e.getMessage());
+            log.error("Dump process failure: ", e);
         }
     }
 
     @GetMapping("/restore/to/{dumpName}")
     public void restoreFromDump(@PathVariable String dumpName) {
         try {
-            dumpService.restore(dumpName);
+            dumpService.restore(dumpName, "");
         } catch (Exception e) {
-            System.out.println("Restore from dump process failure: " + e);
+            log.error("Restore from dump process failure", e);
         }
     }
 
