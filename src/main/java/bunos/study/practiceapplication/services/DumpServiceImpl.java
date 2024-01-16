@@ -8,8 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,14 +35,11 @@ public class DumpServiceImpl implements DumpService {
     @Value("${sources.from-datasource.url}")
     private String dbUrl;
 
-    @Value("${dump.files.path}")
-    private String dumpFilesPath;
-
     @Value("${dump.pg_dump.program.path}")
-    private String pgDumpPath;
+    private String pgProgPath;
 
     @Override
-    public void createDump() throws IOException, InterruptedException {
+    public void createDump(String dumpFilesPath, String args) throws IOException, InterruptedException {
         HashMap<String, String> urlData = getUrlData(dbUrl);
 
         Date currentDate = new Date();
@@ -44,10 +47,13 @@ public class DumpServiceImpl implements DumpService {
         builder.append(currentDate.toString().replace(' ', '_').replace(':', '-'));
         String dumpFileName = builder.toString();
 
-        String command = pgDumpPath + "pg_dump.exe --dbname=postgresql://" + dbUsername + ":" + dbPassword + "@" + urlData.get("host") + ":" + urlData.get("port") + "/" + urlData.get("database") + " -F c > " + dumpFilesPath + "/" + dumpFileName + ".sql";
+        StringBuilder command = new StringBuilder();
+        command.append(pgProgPath + "pg_dump.exe ");
+        command.append(args);
+        command.append(" --dbname=postgresql://" + dbUsername + ":" + dbPassword + "@" + urlData.get("host") + ":" + urlData.get("port") + "/" + urlData.get("database") + " -F c > " + dumpFilesPath + "/" + dumpFileName + ".sql");
 
         String cmdFilePath = dumpFilesPath + "/" + dumpFileName + ".cmd";
-        createCommandFile(cmdFilePath, command);
+        createCommandFile(cmdFilePath, command.toString());
 
         ProcessBuilder processBuilder = new ProcessBuilder(cmdFilePath);
         Process process = processBuilder.start();
@@ -72,23 +78,18 @@ public class DumpServiceImpl implements DumpService {
     }
 
     @Override
-    @Transactional
-    public void restore(String dumpName, String args) throws IOException, InterruptedException {
+    @Transactional(value = "fromTransactionManager")
+    public void restore(String dumpFilesPath, String dumpFileName, String args) throws IOException, InterruptedException {
         HashMap<String, String> urlData = getUrlData(dbUrl);
 
-        StringBuilder command = new StringBuilder();
-
-        command.append(pgDumpPath + "pg_restore.exe --dbname=postgresql://" + dbUsername + ":" + dbPassword + "@" + urlData.get("host") + ":" + urlData.get("port") + "/" + urlData.get("database") + " ");
-        command.append(args);
-        command.append(" " + dumpFilesPath + "/" + dumpName + ".sql");
-
-        String cmdFilePath = dumpFilesPath + "/" + dumpName + ".cmd";
-        createCommandFile(cmdFilePath, command.toString());
-
+        String command = pgProgPath + "pg_restore.exe --dbname=postgresql://" + dbUsername + ":" + dbPassword + "@" + urlData.get("host") + ":" + urlData.get("port") + "/" + urlData.get("database") + " " + args + " " + dumpFilesPath + "/" + dumpFileName;
         System.out.println(command);
 
-        sourceEntityManager.createNativeQuery("DROP TABLE IF EXISTS t_test_entity").executeUpdate();
-        sourceEntityManager.createNativeQuery("DROP SEQUENCE IF EXISTS t_test_entity_seq").executeUpdate();
+        String cmdFileName = dumpFileName.replace(".sql", "").concat(".cmd");
+        String cmdFilePath = dumpFilesPath + "/" + cmdFileName;
+        createCommandFile(cmdFilePath, command);
+
+        sourceEntityManager.createNativeQuery("DROP SCHEMA public CASCADE;\nCREATE SCHEMA public;").executeUpdate();
         sourceEntityManager.flush();
 
         ProcessBuilder processBuilder = new ProcessBuilder(cmdFilePath);
@@ -96,7 +97,7 @@ public class DumpServiceImpl implements DumpService {
         int exitCode = process.waitFor();
 
         if (exitCode == 0) {
-            log.info("A database restored to {} successfully.", dumpName);
+            log.info("A database restored to {} successfully.", dumpFileName);
         } else {
             log.error("Error while restoring from a dump. Exit code: {}", exitCode);
 
@@ -108,9 +109,25 @@ public class DumpServiceImpl implements DumpService {
             }
         }
 
-        if (!new java.io.File(cmdFilePath).delete()) {
-            log.error("Error while deleting a command file.");
+        log.info("Restore procedure was finished");
+        deleteCommandFile(cmdFilePath);
+    }
+
+    @Override
+    public List<String> getBackupFilenames(String path) {
+        List<String> files = new ArrayList<>();
+
+        File dir = new File(path);
+        if (dir.isDirectory()) {
+            for (File f : dir.listFiles()) {
+                String fileName = f.getName();
+                if (fileName.matches("^.+\\.sql$")) {
+                    files.add(fileName);
+                }
+            }
         }
+
+        return files;
     }
 
     private static void createCommandFile(String filePath, String command) {
@@ -118,6 +135,12 @@ public class DumpServiceImpl implements DumpService {
             writer.println(command);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void deleteCommandFile(String filePath) {
+        if (!new java.io.File(filePath).delete()) {
+            log.error("Error while deleting a command file.");
         }
     }
 

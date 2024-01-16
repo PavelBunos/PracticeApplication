@@ -1,8 +1,10 @@
 package bunos.study.practiceapplication.controllers.rest;
 
+import bunos.study.practiceapplication.dtos.DumpRequest;
 import bunos.study.practiceapplication.services.DumpService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -13,22 +15,26 @@ public class DumpController {
 
     private final DumpService dumpService;
 
-    @GetMapping("/create")
-    public void dump() {
+    @PostMapping("/create")
+    public void dump(@RequestBody DumpRequest dumpData) {
         try {
-            dumpService.createDump();
+            dumpService.createDump(dumpData.getPath(), dumpData.getArgs());
         } catch (Exception e) {
             log.error("Dump process failure: ", e);
         }
     }
 
-    @GetMapping("/restore/to/{dumpName}")
-    public void restoreFromDump(@PathVariable String dumpName) {
+    @PostMapping("/restore/to")
+    public void restoreFromDump(@RequestBody DumpRequest dumpData) {
         try {
-            dumpService.restore(dumpName, "");
+            dumpService.restore(dumpData.getPath(), dumpData.getDumpFileName(), dumpData.getArgs());
         } catch (Exception e) {
             log.error("Restore from dump process failure", e);
         }
     }
 
+    @GetMapping("/backups")
+    public ResponseEntity<?> filesList(@RequestParam(name = "path") String path) {
+        return ResponseEntity.ok(dumpService.getBackupFilenames(path));
+    }
 }
