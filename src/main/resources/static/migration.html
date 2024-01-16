@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>App | Миграция данных</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+    <h1>Миграция данных</h1>
+
+    <div class="settings-container">
+        <button @click="startMigration">Начать миграцию</button>
+        <button @click="transferDataToSource">Перенести данные в источник</button>
+    </div>
+</div>
+</body>
+<script src="https://unpkg.com/vue@2.7.14/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.3"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script type="module">
+    const axiosInstance = window.axios;
+
+    new Vue({
+        el: '#app',
+        methods: {
+            startMigration() {
+                this.sendMigrationRequest('/practiceApp/migration/start', 'Миграция успешно запущена!');
+            },
+            transferDataToSource() {
+                this.sendMigrationRequest('/practiceApp/migration/source/restore', 'Данные успешно перенесены в источник!');
+            },
+            sendMigrationRequest(apiUrl, successMessage) {
+                axiosInstance.get(apiUrl)
+                    .then(response => {
+                        console.log('Успешный ответ от сервера:', response.data);
+                        alert(successMessage);
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при отправке запроса:', error);
+                        alert('Произошла ошибка. Пожалуйста, проверьте консоль для дополнительной информации.');
+                    });
+            }
+        }
+    });
+</script>
+</html>

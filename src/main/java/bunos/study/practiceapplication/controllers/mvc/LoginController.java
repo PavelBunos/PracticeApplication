@@ -1,4 +1,4 @@
-package bunos.study.practiceapplication.controllers;
+package bunos.study.practiceapplication.controllers.mvc;
 
 import bunos.study.practiceapplication.models.security.User;
 import org.springframework.web.bind.annotation.GetMapping;
