@@ -14,13 +14,8 @@ public class MvcController {
         return "index.html";
     }
 
-    @GetMapping("/migration")
-    public String migration() {
-        return "migration.html";
-    }
-
     @GetMapping("/backup")
     public String backup() {
-        return "restore_backup.html";
+        return "backup.html";
     }
 }
