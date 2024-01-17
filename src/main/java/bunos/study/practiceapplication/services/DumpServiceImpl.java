@@ -89,9 +89,6 @@ public class DumpServiceImpl implements DumpService {
         String cmdFilePath = dumpFilesPath + "/" + cmdFileName;
         createCommandFile(cmdFilePath, command);
 
-        sourceEntityManager.createNativeQuery("DROP SCHEMA public CASCADE;\nCREATE SCHEMA public;").executeUpdate();
-        sourceEntityManager.flush();
-
         ProcessBuilder processBuilder = new ProcessBuilder(cmdFilePath);
         Process process = processBuilder.start();
         int exitCode = process.waitFor();
