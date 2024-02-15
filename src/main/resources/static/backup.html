@@ -20,8 +20,17 @@
 
         <div class="backup-section">
             <h2>Настройки копирования</h2>
-            <label for="backupArguments">Аргументы</label>
-            <input v-model="backupArguments" id="backupArguments" type="text" placeholder="Введите аргументы" />
+            <h3>Аргументы</h3>
+            <div class="args">
+                <label>-s</label><input type="checkbox" value="-s" v-model="backupArguments">
+                <label>-T</label><input type="checkbox" v-model="tChecked">
+                <select v-if="tChecked" v-model="tArg">
+                    <option value="-T c">custom</option>
+                    <option value="-T p">plain</option>
+                    <option value="-T d">directory</option>
+                    <option value="-T t">tar</option>
+                </select>
+            </div>
 
             <label for="backupPath">Путь сохранения</label>
             <input v-model="backupPath" id="backupPath" type="text" placeholder="Введите путь сохранения" />
@@ -31,16 +40,24 @@
 
         <div class="restore-section">
             <h2>Настройки восстановления</h2>
-            <label for="restoreArguments">Аргументы</label>
-            <input v-model="restoreArguments" id="restoreArguments" type="text" placeholder="Введите аргументы" />
+            <h3>Аргументы</h3>
+            <div class="args">
+                <label>--clean</label><input type="checkbox" value="--clean" v-model="restoreArguments">
+                <label>--if-exists</label><input type="checkbox" value="--if-exists" v-model="restoreArguments">
+                <label>--data-only</label><input type="checkbox" value="--data-only" v-model="restoreArguments" id="fDataOnly">
+                <label>--schema-only</label><input type="checkbox" value="--schema-only" v-model="restoreArguments" id="fSchemaOnly">
+            </div>
 
             <label for="restorePath">Путь к бэкапам</label>
-            <input v-model="restorePath" id="restorePath" type="text" placeholder="Введите путь к бэкапам" />
+            <input v-model="restorePath" id="restorePath" type="text" placeholder="Путь к бэкапам"/>
 
-            <label for="selectedBackup">Выберите бэкап</label>
-            <select v-model="selectedBackup" id="selectedBackup">
-                <option v-for="backup in backupList" :key="backup">{{ backup }}</option>
-            </select>
+            <div v-if="backupList.length > 0">
+                <label for="selectedBackup">Выберите бэкап</label>
+                <select v-model="selectedBackup" id="selectedBackup">
+                    <option v-for="backup in backupList" :key="backup">{{ backup }}</option>
+                </select>
+            </div>
+
             <div class="buttons-container">
                 <button @click="updateBackupList">Обновить список файлов</button>
                 <button @click="startRestore">Начать восстановление</button>
@@ -59,12 +76,14 @@
         el: '#app',
         data() {
             return {
-                backupArguments: '',
+                backupArguments: [],
                 backupPath: '',
-                restoreArguments: '--clean --if-exists',
+                restoreArguments: [],
                 restorePath: '',
                 backupList: [],
-                selectedBackup: ''
+                selectedBackup: '',
+                tChecked: false,
+                tArg: '-T p'
             };
         },
         methods: {
@@ -86,17 +105,20 @@
                     });
             },
             startBackup() {
-                if (this.backupPath && this.backupArguments) {
+                if (this.backupPath.length > 0 && this.backupArguments) {
                     console.log('Начато копирование с аргументами:', this.backupArguments);
                     console.log('Путь сохранения:', this.backupPath);
 
                     let dumpData = {
                         path: this.backupPath,
                         dumpFileName: "",
-                        args: this.backupArguments
+                        args: this.backupArguments.join(' ') + ' ' + this.tArg
                     }
 
-                    axios.post(`/practiceApp/dump/create`, dumpData);
+                    axios.post(`/practiceApp/dump/create`, dumpData).then(function (response) {
+                        alert(response.data.message);
+                    });
+
                 } else {
                     alert('Заполните все необходимые поля!');
                 }
@@ -123,10 +145,12 @@
                     let restoreData = {
                         path: this.restorePath,
                         dumpFileName: this.selectedBackup,
-                        args: this.restoreArguments
+                        args: this.restoreArguments.join(' ')
                     }
 
-                    axios.post(`/practiceApp/dump/restore/to`, restoreData);
+                    axios.post(`/practiceApp/dump/restore/to`, restoreData).then(function (response) {
+                        alert(response.data.message);
+                    });
                 } else {
                     alert('Заполните все необходимые поля!');
                 }
