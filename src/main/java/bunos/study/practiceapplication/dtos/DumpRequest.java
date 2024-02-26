@@ -7,4 +7,5 @@ public class DumpRequest {
     private String path;
     private String dumpFileName;
     private String args;
+    private String database;
 }

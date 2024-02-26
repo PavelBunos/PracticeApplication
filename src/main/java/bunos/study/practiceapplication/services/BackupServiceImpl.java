@@ -1,17 +1,12 @@
 package bunos.study.practiceapplication.services;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import bunos.study.practiceapplication.models.databases.Database;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,26 +16,16 @@ import java.util.regex.Pattern;
 
 @Slf4j
 @Service
-public class DumpServiceImpl implements DumpService {
-
-    @PersistenceContext(unitName = "from")
-    private EntityManager sourceEntityManager;
-
-    @Value("${spring.datasource.username}")
-    private String dbUsername;
-
-    @Value("${spring.datasource.password}")
-    private String dbPassword;
-
-    @Value("${sources.from-datasource.url}")
-    private String dbUrl;
-
+@RequiredArgsConstructor
+public class BackupServiceImpl implements BackupService {
     @Value("${dump.pg_dump.program.path}")
     private String pgProgPath;
 
+    private final DatabaseService databaseService;
+
     @Override
-    public void createDump(String dumpFilesPath, String args) throws Exception {
-        HashMap<String, String> urlData = getUrlData(dbUrl);
+    public void createDump(String dumpFilesPath, String args, String databaseName) throws Exception {
+        Database database = databaseService.getByName(databaseName);
 
         Date currentDate = new Date();
         StringBuilder builder = new StringBuilder();
@@ -50,7 +35,7 @@ public class DumpServiceImpl implements DumpService {
         StringBuilder command = new StringBuilder();
         command.append(pgProgPath + "pg_dump.exe ");
         command.append(args);
-        command.append(" --dbname=postgresql://" + dbUsername + ":" + dbPassword + "@" + urlData.get("host") + ":" + urlData.get("port") + "/" + urlData.get("database") + " -F c > " + dumpFilesPath + "/" + dumpFileName + ".sql");
+        command.append(" --dbname=postgresql://" + database.getUsername() + ":" + database.getPassword() + "@" + database.getHostname() + ":" + database.getPort() + "/" + database.getName() + " -F c > " + dumpFilesPath + "/" + dumpFileName + ".sql");
 
         String cmdFilePath = dumpFilesPath + "/" + dumpFileName + ".cmd";
         createCommandFile(cmdFilePath, command.toString());
@@ -82,11 +67,10 @@ public class DumpServiceImpl implements DumpService {
     }
 
     @Override
-    @Transactional(value = "fromTransactionManager")
-    public void restore(String dumpFilesPath, String dumpFileName, String args) throws Exception {
-        HashMap<String, String> urlData = getUrlData(dbUrl);
+    public void restore(String dumpFilesPath, String dumpFileName, String args, String databaseName) throws Exception {
+        Database database = databaseService.getByName(databaseName);
 
-        String command = pgProgPath + "pg_restore.exe --dbname=postgresql://" + dbUsername + ":" + dbPassword + "@" + urlData.get("host") + ":" + urlData.get("port") + "/" + urlData.get("database") + " " + args + " " + dumpFilesPath + "/" + dumpFileName;
+        String command = pgProgPath + "pg_restore.exe --dbname=postgresql://" + database.getUsername() + ":" + database.getPassword() + "@" + database.getHostname() + ":" + database.getPort() + "/" + database.getName() + " " + args + " " + dumpFilesPath + "/" + dumpFileName;
         System.out.println(command);
 
         String cmdFileName = dumpFileName.replace(".sql", "").concat(".cmd");
@@ -115,7 +99,7 @@ public class DumpServiceImpl implements DumpService {
     }
 
     @Override
-    public List<String> getBackupFilenames(String path) {
+    public List<String> getBackups(String path) {
         List<String> files = new ArrayList<>();
 
         File dir = new File(path);

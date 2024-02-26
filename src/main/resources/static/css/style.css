@@ -94,18 +94,12 @@ button:hover {
     padding: 0;
 }
 
-.backup-section,
-.restore-section {
-    background-color: #fff;
+.section {
+    background-color: #f9f9f9;
     padding: 20px;
     margin-bottom: 20px;
     border: 1px solid #ddd;
     border-radius: 5px;
-}
-
-.restore-section {
-    background-color: #f9f9f9;
-    margin-top: 20px;
 }
 
 .buttons-container {
@@ -116,4 +110,25 @@ button:hover {
 
 .buttons-container button {
     margin: 10px;
+}
+
+.databases-list {
+    border: 1px #ddd solid;
+    width: 100%;
+    border-radius: 5px;
+}
+
+.unselected-row {
+    background-color: white;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.unselected-row:hover {
+    background-color: #217dbb;
+}
+
+.selected-row {
+    background-color: #5cdb5e;
 }

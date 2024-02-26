@@ -16,21 +16,7 @@ spring:
     generate-ddl: true
     hibernate:
       ddl-auto: update
-sources:
-  from-datasource:
-    url: jdbc:postgresql://localhost:5432/db-from
-    username: postgres
-    password: qwerty
-    driver-class-name: org.postgresql.Driver
-  to-datasource:
-    url: jdbc:postgresql://localhost:5432/db-to
-    username: postgres
-    password: qwerty
-    driver-class-name: org.postgresql.Driver
 dump:
   pg_dump:
     program:
-      path: D:/Programms/PostgreSQL/16/bin/
-  files:
-    path: D:/dump
-
+      path: D:/Programs/PostgreSQL/16/bin/
