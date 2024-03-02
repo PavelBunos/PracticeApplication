@@ -8,12 +8,8 @@
 <body>
 <div id="app">
     <div class="block">
-        <h1>База данных</h1>
-
-        <div class="section">
-            <h2>Выбор базы данных</h2>
-            <databases-list :databases="databases"></databases-list>
-        </div>
+        <h2>База данных</h2>
+        <databases-list :databases="databases" @selected="handleSelected"></databases-list>
     </div>
 
     <div class="block">
@@ -23,8 +19,8 @@
             <h2>Настройки копирования</h2>
             <h3>Аргументы</h3>
             <div class="args">
-                <label>-s</label><input type="checkbox" value="-s" v-model="backupArguments">
-                <label>-T</label><input type="checkbox" v-model="tChecked">
+                <label>schema only</label><input type="checkbox" value="-s" v-model="backupArguments">
+                <label>format</label><input type="checkbox" v-model="tChecked">
                 <select v-if="tChecked" v-model="tArg">
                     <option value="-T c">custom</option>
                     <option value="-T p">plain</option>
@@ -43,10 +39,10 @@
             <h2>Настройки восстановления</h2>
             <h3>Аргументы</h3>
             <div class="args">
-                <label>--clean</label><input type="checkbox" value="--clean" v-model="restoreArguments">
-                <label>--if-exists</label><input type="checkbox" value="--if-exists" v-model="restoreArguments">
-                <label>--data-only</label><input type="checkbox" value="--data-only" v-model="restoreArguments" id="fDataOnly">
-                <label>--schema-only</label><input type="checkbox" value="--schema-only" v-model="restoreArguments" id="fSchemaOnly">
+                <label class="arg-label">clean</label><input type="checkbox" value="--clean" v-model="restoreArguments">
+                <label class="arg-label">if exists</label><input type="checkbox" value="--if-exists" v-model="restoreArguments">
+                <label class="arg-label">data only</label><input type="checkbox" value="--data-only" v-model="restoreArguments" id="fDataOnly">
+                <label class="arg-label">schema only</label><input type="checkbox" value="--schema-only" v-model="restoreArguments" id="fSchemaOnly">
             </div>
 
             <label for="restorePath">Путь к бэкапам</label>
@@ -59,7 +55,7 @@
                 </select>
             </div>
 
-            <div class="buttons-container">
+            <div class="container">
                 <button @click="updateBackupList">Обновить список файлов</button>
                 <button @click="startRestore">Начать восстановление</button>
             </div>

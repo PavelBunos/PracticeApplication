@@ -1,36 +1,22 @@
-const axiosInstance = window.axios;
+const api = window.axios;
 
 Vue.component('database-row', {
-    props: ['database', 'selectedDatabase'],
+    props: ['database'],
     template:
-        '<tr :class="rowClasses" :isSelected="database === selectedDatabase" @click="selectDatabase(database)">' +
-            '<td>{{database.name}}</td>' +
-        '</tr>',
-    computed: {
-        rowClasses() {
-            return {
-                'selected-row': this.isSelected,
-                'unelected-row': !this.isSelected
-            };
-        }
-    },
-    methods: {
-        selectDatabase(database) {
-            this.selectedDatabase = database;
-            console.log(this.selectedDatabase)
-        }
-    }
+        '<option>' +
+            '{{database.name}}' +
+        '</option>'
 });
 
 Vue.component('databases-list', {
     props: ['databases'],
     template:
-        '<table class="databases-list">' +
+        '<select class="databases-list" v-model="selectedValue" @change="handleChange">' +
             '<database-row v-for="database in databases" :database="database" :key="database.databaseId" />' +
-        '</table>',
+        '</select>',
     created: function() {
-        axiosInstance.get("/practiceApp/databases").then(result => {
-            const data = result.data;
+        api.get("/practiceApp/databases").then(response => {
+            const data = response.data.data;
             data.forEach(database => {
                 this.databases.push(database);
             })
@@ -38,7 +24,12 @@ Vue.component('databases-list', {
     },
     data() {
         return {
-            selectedDatabase: null
+            selectedValue: null
+        }
+    },
+    methods: {
+        handleChange() {
+            this.$emit('selected', this.selectedValue);
         }
     }
 })
@@ -56,38 +47,53 @@ new Vue({
             backupList: [],
             selectedBackup: '',
             tChecked: false,
-            tArg: '-T p'
+            tArg: '-T p',
+
         };
     },
     methods: {
         startBackup() {
             if (this.backupPath.length > 0 && this.backupArguments) {
-                console.log('Начато копирование с аргументами:', this.backupArguments);
-                console.log('Путь сохранения:', this.backupPath);
-
                 let dumpData = {
                     path: this.backupPath,
                     dumpFileName: "",
-                    args: this.backupArguments.join(' ') + ' ' + this.tArg
+                    args: this.backupArguments.join(' ') + ' ' + this.tArg,
+                    database: this.selectedDatabase
                 }
 
-                axios.post(`/practiceApp/dump/create`, dumpData).then(function (response) {
-                    alert(response.data.message);
+                axios.post(`/practiceApp/dump/create`, dumpData).then(response => {
+                    if (response.status == 200) {
+                        alert("Бэкап успешно создан!");
+                    } else {
+                        alert(response.data.data);
+                    }
+                }).catch(error => {
+                    switch (error.status) {
+                        case 500:
+                            alert("Не удалось создать - INTERNAL SERVER ERROR - 500");
+                            break;
+                        default:
+                            alert("Непредвиденная ошибка!");
+                            break;
+                    }
                 });
-
             } else {
                 alert('Заполните все необходимые поля!');
             }
         },
         updateBackupList() {
             if (this.restorePath) {
-                console.log('Обновлен список бэкапов из пути:', this.restorePath);
-                axios.get(`/practiceApp/dump/backups?path=${encodeURIComponent(this.restorePath)}`)
-                    .then(response => {
-                        this.backupList = response.data;
+                axios.get(`/practiceApp/dump/backups?path=${encodeURIComponent(this.restorePath)}`).then(response => {
+                        if (response.status == 200) {
+                            this.backupList = response.data.data;
+                        } else {
+                            alert(response.data.data);
+                        }
+
+                        console.log(response.data.data);
                     })
                     .catch(error => {
-                        console.error('Ошибка при получении списка бэкапов:', error);
+                        alert('Непредвиденная ошибка: ' + error);
                     });
             } else {
                 alert('Заполните все необходимые поля!');
@@ -95,21 +101,25 @@ new Vue({
         },
         startRestore() {
             if (this.restoreArguments && this.selectedBackup) {
-                console.log('Запущено восстановление с аргументами:', this.restoreArguments);
-                console.log('Выбранный бэкап:', this.selectedBackup);
-
                 let restoreData = {
                     path: this.restorePath,
                     dumpFileName: this.selectedBackup,
-                    args: this.restoreArguments.join(' ')
+                    args: this.restoreArguments.join(' '),
+                    database: this.selectedDatabase
                 }
 
-                axios.post(`/practiceApp/dump/restore/to`, restoreData).then(function (response) {
-                    alert(response.data.message);
+                axios.post(`/practiceApp/dump/restore`, restoreData).then(response => {
+                    alert(response.data.data);
+                }).catch(error => {
+                    alert("Непредвиденная ошибка!");
                 });
             } else {
                 alert('Заполните все необходимые поля!');
             }
+        },
+        handleSelected(value) {
+            this.selectedDatabase = value;
+            console.log(this.selectedDatabase);
         }
     }
 });

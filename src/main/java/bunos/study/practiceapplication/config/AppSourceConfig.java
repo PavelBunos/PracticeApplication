@@ -37,7 +37,7 @@ public class AppSourceConfig {
         return
                 builder
                         .dataSource(dataSource)
-                        .packages("bunos.study.practiceapplication.models")
+                        .packages("bunos.study.practiceapplication.domain.model")
                         .persistenceUnit("default")
                         .build();
     }

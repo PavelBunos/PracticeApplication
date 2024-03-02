@@ -1,6 +1,6 @@
 package bunos.study.practiceapplication.config;
 
-import bunos.study.practiceapplication.services.UserService;
+import bunos.study.practiceapplication.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,112 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>App | Настройки</title>
-  <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <title>App | Подключения</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div id="app">
-  <div class="block">
-    <h1>Подключения к базам данных</h1>
+    <div class="block">
+        <h1>Подключения к базам данных</h1>
 
-    <div class="section">
-      <h2>Подключения</h2>
+        <div class="section">
+            <h2>Подключения</h2>
 
-
+            // todo
+        </div>
     </div>
 </div>
 </body>
 <script src="https://unpkg.com/vue@2.7.14/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.3"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<script type="module">
-  const axiosInstance = window.axios;
-
-  new Vue({
-    el: '#app',
-    data() {
-      return {
-        backupArguments: [],
-        backupPath: '',
-        restoreArguments: [],
-        restorePath: '',
-        backupList: [],
-        selectedBackup: '',
-        tChecked: false,
-        tArg: '-T p'
-      };
-    },
-    methods: {
-      startMigration() {
-        this.sendMigrationRequest('/practiceApp/migration/start', 'Миграция успешно запущена!');
-      },
-      transferDataToSource() {
-        this.sendMigrationRequest('/practiceApp/migration/source/restore', 'Данные успешно перенесены в источник!');
-      },
-      sendMigrationRequest(apiUrl, successMessage) {
-        axiosInstance.get(apiUrl)
-                .then(response => {
-                  console.log('Успешный ответ от сервера:', response.data);
-                  alert(successMessage);
-                })
-                .catch(error => {
-                  console.error('Ошибка при отправке запроса:', error);
-                  alert('Произошла ошибка. Пожалуйста, проверьте консоль для дополнительной информации.');
-                });
-      },
-      startBackup() {
-        if (this.backupPath.length > 0 && this.backupArguments) {
-          console.log('Начато копирование с аргументами:', this.backupArguments);
-          console.log('Путь сохранения:', this.backupPath);
-
-          let dumpData = {
-            path: this.backupPath,
-            dumpFileName: "",
-            args: this.backupArguments.join(' ') + ' ' + this.tArg
-          }
-
-          axios.post(`/practiceApp/dump/create`, dumpData).then(function (response) {
-            alert(response.data.message);
-          });
-
-        } else {
-          alert('Заполните все необходимые поля!');
-        }
-      },
-      updateBackupList() {
-        if (this.restorePath) {
-          console.log('Обновлен список бэкапов из пути:', this.restorePath);
-          axios.get(`/practiceApp/dump/backups?path=${encodeURIComponent(this.restorePath)}`)
-                  .then(response => {
-                    this.backupList = response.data;
-                  })
-                  .catch(error => {
-                    console.error('Ошибка при получении списка бэкапов:', error);
-                  });
-        } else {
-          alert('Заполните все необходимые поля!');
-        }
-      },
-      startRestore() {
-        if (this.restoreArguments && this.selectedBackup) {
-          console.log('Запущено восстановление с аргументами:', this.restoreArguments);
-          console.log('Выбранный бэкап:', this.selectedBackup);
-
-          let restoreData = {
-            path: this.restorePath,
-            dumpFileName: this.selectedBackup,
-            args: this.restoreArguments.join(' ')
-          }
-
-          axios.post(`/practiceApp/dump/restore/to`, restoreData).then(function (response) {
-            alert(response.data.message);
-          });
-        } else {
-          alert('Заполните все необходимые поля!');
-        }
-      }
-    }
-  });
-</script>
 </html>
