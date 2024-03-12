@@ -1,3 +1,5 @@
+// todo - to refactor code
+
 package bunos.study.practiceapplication.service;
 
 import bunos.study.practiceapplication.domain.dto.Response;
@@ -23,13 +25,13 @@ import java.util.regex.Pattern;
 public class BackupServiceImpl implements BackupService {
 
     @Value("${dump.pg_dump.program.path}") // todo - вынести в админ-панель
-    private String pgProgPath;
+    private String pgProgramPath;
 
     private final DatabaseService databaseService;
 
     @Override
     public ResponseEntity<Response> createBackup(String dumpFilesPath, String args, String databaseName) {
-        Database database = (Database)databaseService.getByName(databaseName).getBody().getData();
+        Database database = (Database) databaseService.getByName(databaseName).getBody().getData();
 
         if (!database.getConnectionStatus()) {
             return new ResponseEntity<>(Response.builder()
@@ -39,17 +41,33 @@ public class BackupServiceImpl implements BackupService {
         }
 
         Date currentDate = new Date();
-        StringBuilder builder = new StringBuilder();
-        builder.append(currentDate);
-        builder.append("_");
-        builder.append(database.getName());
-        String dumpFileName = builder.toString().replace(' ', '_').replace(':', '-');
+        StringBuilder fileNameBuilder = new StringBuilder();
+        fileNameBuilder.append(currentDate);
+        fileNameBuilder.append("_");
+        fileNameBuilder.append(database.getName());
+        String backupFileName = fileNameBuilder.toString().replace(' ', '_').replace(':', '-');
 
         StringBuilder command = new StringBuilder();
-        command.append(pgProgPath);
+        command.append(pgProgramPath);
         command.append("pg_dump.exe ");
         command.append(args);
-        command.append(" --dbname=postgresql://" + database.getUser() + ":" + database.getPassword() + "@" + database.getHostname() + ":" + database.getPort() + "/" + database.getName() + " -F c > " + dumpFilesPath + "/" + dumpFileName + ".sql");
+        command.append(" --dbname=postgresql://");
+        command.append(database.getUser());
+        command.append(":");
+        command.append(database.getPassword());
+        command.append("@");
+        command.append(database.getHostname());
+        command.append(":");
+        command.append(database.getPort());
+        command.append("/");
+        command.append(database.getName());
+        command.append(" ");
+        command.append(args);
+        command.append(" > ");
+        command.append(dumpFilesPath);
+        command.append("/");
+        command.append(backupFileName);
+        command.append(".sql");
 
         File dir = new File(dumpFilesPath);
         if (!dir.exists()) {
@@ -61,48 +79,31 @@ public class BackupServiceImpl implements BackupService {
             }
         }
 
-        String cmdFilePath = dumpFilesPath + "/" + dumpFileName + ".cmd";
+        String cmdFilePath = dumpFilesPath + "/" + backupFileName + ".cmd";
         createCommandFile(cmdFilePath, command.toString());
 
-        int exitCode = 0;
-        Process process;
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(cmdFilePath);
-            process = processBuilder.start();
-            exitCode = process.waitFor();
+            Process process = processBuilder.start();
+            int exitCode = process.waitFor();
+
+            if (exitCode == 0) {
+                log.info("Backup created successfully.");
+            } else {
+                log.error("Error while creating backup. Exit code: {}", exitCode);
+
+                return new ResponseEntity<>(Response.builder()
+                        .data("Произошла ошибка: " + getProcessError(process))
+                        .build(),
+                        HttpStatus.BAD_REQUEST);
+            }
         } catch (Exception ex) {
             return new ResponseEntity<>(Response.builder()
                     .data("Произошла ошибка: " + ex.getMessage())
                     .build(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        if (exitCode == 0) {
-            log.info("Dump created successfully.");
-        } else {
-            log.error("Error while creating a dump. Exit code: {}", exitCode);
-            StringBuilder message = new StringBuilder();
-
-            try {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        log.error(line);
-                        message.append(line);
-                    }
-                }
-            } catch (Exception ex) {
-                log.error("Unable to get error message");
-            }
-
-            return new ResponseEntity<>(Response.builder()
-                    .data("Произошла ошибка: " + message)
-                    .build(),
-                    HttpStatus.BAD_REQUEST);
-        }
-
-        if (!new java.io.File(cmdFilePath).delete()) {
-            log.error("Error while deleting a command file.");
+        } finally {
+            deleteCommandFile(cmdFilePath);
         }
 
         return new ResponseEntity<>(Response.builder()
@@ -113,7 +114,7 @@ public class BackupServiceImpl implements BackupService {
 
     @Override
     public ResponseEntity<Response> restore(String dumpFilesPath, String dumpFileName, String args, String databaseName) {
-        Database database = (Database)databaseService.getByName(databaseName).getBody().getData();
+        Database database = (Database) databaseService.getByName(databaseName).getBody().getData();
 
         if (!database.getConnectionStatus()) {
             return new ResponseEntity<>(Response.builder()
@@ -122,50 +123,36 @@ public class BackupServiceImpl implements BackupService {
                     HttpStatus.BAD_REQUEST);
         }
 
-        String command = pgProgPath + "pg_restore.exe --dbname=postgresql://" + database.getUser() + ":" + database.getPassword() + "@" + database.getHostname() + ":" + database.getPort() + "/" + database.getName() + " " + args + " " + dumpFilesPath + "/" + dumpFileName;
+        String command = pgProgramPath + "pg_restore.exe --dbname=postgresql://" + database.getUser() + ":" + database.getPassword() + "@" + database.getHostname() + ":" + database.getPort() + "/" + database.getName() + " " + args + " " + dumpFilesPath + "/" + dumpFileName;
 
         String cmdFileName = dumpFileName.replace(".sql", "").concat(".cmd");
         String cmdFilePath = dumpFilesPath + "/" + cmdFileName;
 
         createCommandFile(cmdFilePath, command);
 
-        int exitCode;
-        Process process;
         try {
             ProcessBuilder processBuilder = new ProcessBuilder(cmdFilePath);
-            process = processBuilder.start();
-            exitCode = process.waitFor();
+            Process process = processBuilder.start();
+            int exitCode = process.waitFor();
+
+            if (exitCode == 0) {
+                log.info("A database restored to {} successfully.", dumpFileName);
+            } else {
+                log.error("Error while restoring from a dump. Exit code: {}", exitCode);
+
+                return new ResponseEntity<>(Response.builder()
+                        .data("Произошла ошибка: " + getProcessError(process))
+                        .build(),
+                        HttpStatus.BAD_REQUEST);
+            }
+
         } catch (Exception ex) {
             return new ResponseEntity<>(Response.builder()
                     .data("Произошла ошибка: " + ex.getMessage())
                     .build(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        deleteCommandFile(cmdFilePath);
-
-        if (exitCode == 0) {
-            log.info("A database restored to {} successfully.", dumpFileName);
-        } else {
-            log.error("Error while restoring from a dump. Exit code: {}", exitCode);
-            StringBuilder message = new StringBuilder();
-
-            try {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        log.error(line);
-                        message.append(line);
-                    }
-                }
-            } catch (Exception ex) {
-                log.error("Unable to get error message");
-            }
-
-            return new ResponseEntity<>(Response.builder()
-                    .data("Произошла ошибка: " + message)
-                    .build(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            deleteCommandFile(cmdFilePath);
         }
 
         return new ResponseEntity<>(Response.builder()
@@ -210,6 +197,7 @@ public class BackupServiceImpl implements BackupService {
                 HttpStatus.OK);
     }
 
+
     private static void createCommandFile(String filePath, String command) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
             writer.println(command);
@@ -238,4 +226,20 @@ public class BackupServiceImpl implements BackupService {
         return urlData;
     }
 
+    private String getProcessError(Process process) {
+        StringBuilder message = new StringBuilder();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                log.error(line);
+                message.append(line);
+            }
+        } catch (Exception ex) {
+            message.append("Unable to get error message");
+            log.error(message.toString());
+        }
+
+        return message.toString();
+    }
 }

@@ -66,11 +66,10 @@ let app = new Vue({
                         this.updateDatabases();
                         alert("База данных убрана из подключенных!");
                     } else {
-                        alert("Не удалось убрать базу данных");
+                        alert(response.data.data);
                     }
                 }).catch(error => {
-                    alert("Произошла непредвиденная ошибка!");
-                    console.error(error);
+                    alert(error.response.data.data);
                 });
             } else {
                 alert("База данных не выбрана!");
@@ -85,11 +84,10 @@ let app = new Vue({
                     if (response.status == 200) {
                         this.newDatabase = response.data.data;
                     } else {
-                        alert("Произошла ошибка!");
+                        alert(response.data.data);
                     }
                 }).catch(error => {
-                    alert("Произошла непредвиденная ошибка!");
-                    console.error(error);
+                    alert(error.response.data.data);
                     return;
                 });
             } else {
@@ -103,12 +101,10 @@ let app = new Vue({
                         this.updateDatabases();
                         alert("Изменения сохранены!");
                     } else {
-                        alert("Произошла ошибка!");
-                        console.log(response.status);
+                        alert(response.data.data);
                     }
                 }).catch(error => {
-                    alert("Произошла непредвиденная ошибка!");
-                    console.error(error);
+                    alert(error.response.data.data);
                     return;
                 });
 
@@ -136,8 +132,7 @@ let app = new Vue({
 
                         alert(response.data.data);
                     }).catch(error => {
-                        alert("Произошла непредвиденная ошибка!");
-                        console.error(error);
+                        alert(error.response.data.data);
                         return;
                     });
                 } else {

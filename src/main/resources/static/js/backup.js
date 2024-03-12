@@ -61,7 +61,7 @@ new Vue({
                     database: this.selectedDatabase
                 }
 
-                axios.post(`/practiceApp/dump/create`, dumpData).then(response => {
+                api.post(`/practiceApp/dump/create`, dumpData).then(response => {
                     if (response.status == 200) {
                         alert("Бэкап успешно создан!");
                     } else {
@@ -83,7 +83,7 @@ new Vue({
         },
         updateBackupList() {
             if (this.restorePath) {
-                axios.get(`/practiceApp/dump/backups?path=${encodeURIComponent(this.restorePath)}`).then(response => {
+                api.get(`/practiceApp/dump/backups?path=${encodeURIComponent(this.restorePath)}`).then(response => {
                         if (response.status == 200) {
                             this.backupList = response.data.data;
                         } else {
@@ -93,7 +93,7 @@ new Vue({
                         console.log(response.data.data);
                     })
                     .catch(error => {
-                        alert('Непредвиденная ошибка: ' + error);
+                        alert(error.response.data.data);
                     });
             } else {
                 alert('Заполните все необходимые поля!');
@@ -108,10 +108,10 @@ new Vue({
                     database: this.selectedDatabase
                 }
 
-                axios.post(`/practiceApp/dump/restore`, restoreData).then(response => {
+                api.post(`/practiceApp/dump/restore`, restoreData).then(response => {
                     alert(response.data.data);
                 }).catch(error => {
-                    alert("Непредвиденная ошибка!");
+                    alert(error.response.data.data);
                 });
             } else {
                 alert('Заполните все необходимые поля!');

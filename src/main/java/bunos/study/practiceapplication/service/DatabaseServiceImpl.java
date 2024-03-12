@@ -18,13 +18,36 @@ public class DatabaseServiceImpl implements DatabaseService {
     private final DatabaseRepository databaseRepository;
 
     @Override
-    public void add(Database database) {
-        databaseRepository.save(database);
+    public ResponseEntity<Response> add(Database database) {
+        try {
+            databaseRepository.save(database);
+            return new ResponseEntity<>(Response.builder()
+                    .data("База данных сохранена!")
+                    .build(),
+                    HttpStatus.OK);
+        }
+        catch (Exception ex) {
+            return new ResponseEntity<>(Response.builder()
+                    .data("Не удалось сохранить базу данных")
+                    .build(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
-    public void remove(Database database) {
-        databaseRepository.delete(database);
+    public ResponseEntity<Response> remove(Database database) {
+        try {
+            databaseRepository.delete(database);
+            return new ResponseEntity<>(Response.builder()
+                    .data("База данных удалена!")
+                    .build(),
+                    HttpStatus.OK);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(Response.builder()
+                    .data("База данных не была удалена!")
+                    .build(),
+                    HttpStatus.BAD_REQUEST);
+        }
     }
 
     @Override
