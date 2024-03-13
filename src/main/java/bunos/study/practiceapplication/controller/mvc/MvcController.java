@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @AllArgsConstructor
 @RequestMapping
 public class MvcController {
-    @GetMapping("/index")
+    @GetMapping("/")
     public String index() {
         return "index.html";
     }
@@ -22,5 +22,15 @@ public class MvcController {
     @GetMapping("/settings")
     public String settings() {
         return "settings.html";
+    }
+
+    @GetMapping("/login")
+    public String login() {
+        return "login.html";
+    }
+
+    @GetMapping("/admin")
+    public String admin() {
+        return "admin.html";
     }
 }

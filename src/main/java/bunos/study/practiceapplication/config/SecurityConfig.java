@@ -19,6 +19,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -26,6 +28,7 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
     private final UserService userService;
+    private final JwtRequestFilter jwtRequestFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -33,16 +36,12 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests
+                        .requestMatchers("/admin", "/settings").hasRole("ADMIN")
                         .requestMatchers("/",
-                                "/home",
-                                "/auth",
-                                "/migration/start",
-                                "/migration/source/restore",
-                                "/dump/create",
-                                "/dump/restore/to/{dumpName}"
-                        ).permitAll()
-                        //.requestMatchers("/users").authenticated()
-                        .requestMatchers("/admin-panel").hasRole("ADMIN")
+                        "/auth",
+                        "/migration",
+                        "/backup"
+                        ).authenticated()
                         .anyRequest().permitAll()
                 )
                 .formLogin((form) -> form
@@ -53,9 +52,8 @@ public class SecurityConfig {
                 .sessionManagement(
                         x -> x.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .exceptionHandling(x -> x.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
-        // .addFilterBefore() ...
-
+                .exceptionHandling(x -> x.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
