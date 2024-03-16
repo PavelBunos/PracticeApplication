@@ -1,5 +1,6 @@
 package bunos.study.practiceapplication.config;
 
+import bunos.study.practiceapplication.domain.model.Role;
 import bunos.study.practiceapplication.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@EnableGlobalMethodSecurity(securedEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfig {
     private final UserService userService;
     private final JwtRequestFilter jwtRequestFilter;
@@ -36,11 +37,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/admin", "/settings").hasRole("ADMIN")
-                        .requestMatchers("/",
-                        "/auth",
-                        "/migration",
-                        "/backup"
+                        .requestMatchers(
+                                "/admin",
+                                "/settings",
+                                "/migration",
+                                "/backup"
                         ).authenticated()
                         .anyRequest().permitAll()
                 )
@@ -79,10 +80,10 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService() {
         UserDetails user =
                 User.withDefaultPasswordEncoder()
-                        .username("user")
-                        .password("pass")
+                        .username("admin")
+                        .password("admin")
                         .roles("ADMIN")
-                        .build();
+                        .build(); // to ask
 
         return new InMemoryUserDetailsManager(user);
     }

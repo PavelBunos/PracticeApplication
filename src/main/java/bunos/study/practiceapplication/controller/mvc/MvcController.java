@@ -1,6 +1,7 @@
 package bunos.study.practiceapplication.controller.mvc;
 
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +21,7 @@ public class MvcController {
     }
 
     @GetMapping("/settings")
+    @PreAuthorize("hasRole('ADMIN')")
     public String settings() {
         return "settings.html";
     }
@@ -30,6 +32,7 @@ public class MvcController {
     }
 
     @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
     public String admin() {
         return "admin.html";
     }

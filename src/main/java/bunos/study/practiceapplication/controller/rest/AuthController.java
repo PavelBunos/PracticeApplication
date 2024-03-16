@@ -6,6 +6,7 @@ import bunos.study.practiceapplication.domain.dto.exception.AppError;
 import bunos.study.practiceapplication.service.UserService;
 import bunos.study.practiceapplication.util.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
     private final UserService userService;
     private final JwtTokenUtils jwtTokenUtils;
