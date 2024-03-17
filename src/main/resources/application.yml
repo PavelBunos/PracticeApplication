@@ -1,10 +1,13 @@
 server:
+  tomcat:
+    cookie-processor: org.apache.tomcat.util.http.LegacyCookieProcessor
   port: 8080
   servlet:
     context-path: /practiceApp
+
 jwt:
   secret: 984hg493gh0439rthr0429uruj2309yh937gc763fe87t3f89723gf
-  lifetime: 30m
+  lifetime: 60m
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver

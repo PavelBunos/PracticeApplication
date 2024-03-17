@@ -1,11 +1,9 @@
 package bunos.study.practiceapplication.config;
 
-import bunos.study.practiceapplication.domain.model.Role;
 import bunos.study.practiceapplication.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -19,8 +17,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -38,22 +34,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(
-                                "/admin",
-                                "/settings",
-                                "/migration",
-                                "/backup"
+                        "/admin",
+                        "/settings",
+                        "/migration",
+                        "/backup",
+                        "/home"
                         ).authenticated()
                         .anyRequest().permitAll()
                 )
-                .formLogin((form) -> form
-                        .loginPage("/login")
-                        .permitAll()
-                )
+                .formLogin(form -> form.loginPage("/login").permitAll())
                 .logout((logout) -> logout.permitAll())
-                .sessionManagement(
-                        x -> x.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .exceptionHandling(x -> x.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
+                .sessionManagement(x -> x.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -83,7 +74,7 @@ public class SecurityConfig {
                         .username("admin")
                         .password("admin")
                         .roles("ADMIN")
-                        .build(); // to ask
+                        .build(); // todo ask about it
 
         return new InMemoryUserDetailsManager(user);
     }

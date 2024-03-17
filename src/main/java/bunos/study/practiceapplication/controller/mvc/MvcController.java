@@ -10,30 +10,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @AllArgsConstructor
 @RequestMapping
 public class MvcController {
-    @GetMapping("/")
+    @GetMapping({"/home", "/backup", "/migration"})
     public String index() {
         return "index.html";
     }
 
-    @GetMapping("/backup")
-    public String backup() {
-        return "backup.html";
-    }
-
-    @GetMapping("/settings")
+    @GetMapping({"/admin", "/settings"})
     @PreAuthorize("hasRole('ADMIN')")
-    public String settings() {
-        return "settings.html";
+    public String admin() {
+        return "index.html";
     }
 
     @GetMapping("/login")
     public String login() {
-        return "login.html";
-    }
-
-    @GetMapping("/admin")
-    @PreAuthorize("hasRole('ADMIN')")
-    public String admin() {
-        return "admin.html";
+        return "index.html";
     }
 }

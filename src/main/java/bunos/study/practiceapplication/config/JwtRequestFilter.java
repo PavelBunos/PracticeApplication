@@ -4,6 +4,7 @@ import bunos.study.practiceapplication.util.JwtTokenUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,9 +13,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Component
@@ -29,10 +32,25 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String username = null;
         String jwt = null;
 
+        if (authHeader == null) {
+            try {
+                Cookie authCookie = Arrays.stream(request.getCookies()).filter(c -> c.getName().equals("Authorization")).findFirst().get();
+                jwt = authCookie.getValue();
+            } catch (NullPointerException ex) {
+                log.debug("No cookies!");
+            }
+        } else {
+            log.info(authHeader);
+        }
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
+        }
+
+        if (jwt != null) {
             try {
                 username = jwtTokenUtils.getUsername(jwt);
+                log.debug("Token is valid");
             } catch (ExpiredJwtException ex) {
                 log.debug("Token lifetime is expired");
             }
