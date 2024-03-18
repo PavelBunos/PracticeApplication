@@ -219,7 +219,7 @@ const HomePageComponent = Vue.component('HomePageComponent', {
             <ul>
               <li><a href="/practiceApp/backup">Backup</a></li>
               <li><a href="/practiceApp/migration">Migration</a></li>
-              <li><a href="/practiceApp/logs">Logs</a></li>
+              <li><a href="/practiceApp/journalization">Logs</a></li>
               <li><a href="/practiceApp/settings">Settings</a></li>
               <li><a href="/practiceApp/admin">Admin</a></li>
             </ul>
@@ -630,7 +630,160 @@ const LoginComponent = Vue.component('LoginComponent', {
     }
 })
 
+Vue.component('journal-option', {
+    props: ['journal'],
+    template:
+        '<option>' +
+        '{{journal.date}}' +
+        '</option>'
+});
+
+Vue.component('journals-list', {
+    props: ['journals', 'selectJournal'],
+    template:
+        '<select v-model="selected" @change="changeSelection">' +
+        '<journal-option v-for="journal in journals" :journal="journal" :key="journal.journalid" />' +
+        '</select>',
+    data() {
+        return {
+            selected: null
+        }
+    },
+    methods: {
+        changeSelection() {
+            this.selectJournal(this.selected);
+        }
+    }
+})
+
+Vue.component('logs-row', {
+    props: ['log'],
+    template:
+        '<tr :log="log">' +
+        '<td>{{log.journal.user.username}}</td><td>{{log.data}}</td><td>{{log.time}}</td><td>{{log.status}}</td>' +
+        '</tr>'
+})
+
+Vue.component('logs-table', {
+    props: ['logs'],
+    template:
+        '<table>' +
+        '<thead>' +
+        '<tr>' +
+        '<td>пользователь</td><td>информация</td><td>время</td><td>статус</td>' +
+        '</tr>' +
+        '</thead>' +
+        '<tbody>' +
+        '<logs-row v-for="log in logs" :log="log" :key="logs.logId"></logs-row>' +
+        '</tbody>' +
+        '</table>'
+})
+
+Vue.component('users-list-row', {
+    props: ['user'],
+    template:
+        `
+        <option>{{user.username}}</option>
+        `
+})
+
+Vue.component('users-list', {
+    props: ['users', 'selectUser'],
+    template:
+        `
+        <select v-model="selected" @change="changeSelection"> +
+        <users-list-row v-for="user in users" :user="user" :key="user.userid" /> +
+        </select>
+        `,
+    methods: {
+        changeSelection() {
+            this.selectUser(this.selected);
+        }
+    },
+    data() {
+        return {
+            selected: null
+        }
+    }
+})
+
+const LogsComponent = Vue.component('LogsComponent', {
+    template: `
+    <div class="page">
+    <BackButton></BackButton>
+    <div class="block">
+        <h1>Журналы</h1>
+        <users-list :users="users" :selectUser="selectUser"></users-list>
+        <journals-list v-if="isUserSelected && journals.length > 0" :journals="journals" :selectJournal="selectJournal"></journals-list>
+        <p v-if="journals.length === 0">Нет журналов</p>
+        <logs-table :logs="logs" v-if="isJournalSelected"></logs-table>
+    </div>
+    </div>
+    `,
+    data() {
+        return {
+            users: [],
+            journals: [],
+            logs: [],
+            selectedJournal: null,
+            selectedUser: null,
+            isUserSelected: false,
+            isJournalSelected: false
+        }
+    },
+    created: function () {
+        api.get("/practiceApp/users").then(response => {
+            const data = response.data;
+            data.forEach(user => {
+                this.users.push(user);
+            });
+        });
+    },
+    methods: {
+        selectUser(user) {
+            this.selectedUser = user;
+            this.isUserSelected = true;
+            this.updateJournals();
+            if (this.selectedJournal != null) {
+                this.updateLogs();
+            }
+        },
+        selectJournal(journal) {
+            this.selectedJournal = journal;
+            this.isJournalSelected = true;
+            this.updateLogs();
+        },
+        updateLogs() {
+            this.logs = [];
+            api.get("/practiceApp/logs/data/" + this.selectedJournal + "_" + this.selectedUser).then(response => {
+                const data = response.data.data;
+                data.forEach(log => {
+                    this.logs.push(log);
+                });
+            });
+        },
+        updateJournals() {
+            this.journals = [];
+            api.get("/practiceApp/logs/journals/user/" + this.selectedUser).then(response => {
+                const data = response.data.data;
+                data.forEach(journal => {
+                    this.journals.push(journal);
+                });
+            });
+
+            this.isJournalSelected = false;
+        }
+    }
+})
+
 const routes = [
+    {
+        path: '/practiceApp/journalization',
+        component: LogsComponent,
+        meta: {
+            title: 'Logs'
+        }
+    },
     {
         path: '/practiceApp/settings',
         component: SettingsComponent,
@@ -685,5 +838,8 @@ function setCookie(name, value, hours) {
 
 new Vue({
     router: router,
-    el: '#app'
+    el: '#app',
+    created() {
+
+    }
 });

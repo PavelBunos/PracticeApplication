@@ -10,10 +10,8 @@ import java.util.List;
 
 public interface UserService extends UserDetailsService {
     ResponseEntity<?> create(UserData userData);
-
     ResponseEntity<?> remove(UserData userData);
-
     List<User> getAllUsers();
-
+    User findByUsername(String username);
     List<Role> getUserRoles(UserData userData);
 }

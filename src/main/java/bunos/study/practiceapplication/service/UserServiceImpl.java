@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<?> remove(UserData userData) {
-        User user = userRepository.findAll().stream().filter(x -> x.getUsername().equals(userData.getUsername())).findFirst().get();
+        User user = userRepository.findAll().stream().filter(x -> x.getUsername().equals(userData.getUsername())).findFirst().  get();
         if (user == null) {
             return new ResponseEntity<>(Response.builder().data("Пользователь не существует!").build(), HttpStatus.BAD_REQUEST);
         }
@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
         return new ResponseEntity<>(Response.builder().data(user.getUsername() + " был успешно удалён!").build(), HttpStatus.OK);
     }
 
-
+    @Override
     public User findByUsername(String username) {
         return userRepository
                 .findAll()

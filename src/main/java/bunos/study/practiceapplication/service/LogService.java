@@ -2,13 +2,17 @@ package bunos.study.practiceapplication.service;
 
 import bunos.study.practiceapplication.domain.model.Log;
 import bunos.study.practiceapplication.domain.model.User;
+import org.springframework.http.HttpStatus;
 
-import java.util.Date;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface LogService {
-    Log getById(long id);
-    Log getByTime(Date time);
     List<Log> getAllLogs();
+    List<Log> getUserLogs(User user);
+    List<Log> getLogsByDate(LocalDate date);
+    List<Log> getLogsByData(String data);
+    void log(String info, User user, int status);
     void log(String info, User user);
 }

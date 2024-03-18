@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @AllArgsConstructor
 @RequestMapping
 public class MvcController {
-    @GetMapping({"/home", "/backup", "/migration"})
+    @GetMapping({"/home", "/backup", "/migration", "/journalization"})
     public String index() {
         return "index.html";
     }

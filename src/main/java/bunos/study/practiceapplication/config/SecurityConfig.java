@@ -1,6 +1,7 @@
 package bunos.study.practiceapplication.config;
 
 import bunos.study.practiceapplication.service.UserService;
+import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,11 +35,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(
-                        "/admin",
-                        "/settings",
-                        "/migration",
-                        "/backup",
-                        "/home"
+                                "/admin",
+                                "/settings",
+                                "/migration",
+                                "/backup",
+                                "/home",
+                                "/journalization"
                         ).authenticated()
                         .anyRequest().permitAll()
                 )
@@ -46,6 +48,7 @@ public class SecurityConfig {
                 .logout((logout) -> logout.permitAll())
                 .sessionManagement(x -> x.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

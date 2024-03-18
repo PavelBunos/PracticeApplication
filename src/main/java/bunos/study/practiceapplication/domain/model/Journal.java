@@ -2,14 +2,20 @@ package bunos.study.practiceapplication.domain.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
+@Data
 @Table(name = "t_journal")
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Journal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,9 +23,10 @@ public class Journal {
     private long journalId;
 
     @Column(name = "date")
-    private Date date;
+    private LocalDate date;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 }

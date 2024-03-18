@@ -3,13 +3,14 @@ package bunos.study.practiceapplication.service;
 import bunos.study.practiceapplication.domain.model.Journal;
 import bunos.study.practiceapplication.domain.model.User;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface JournalService {
-    void createNewJournal(User user);
-    Journal getJournalByUser(User user);
-    List<Journal> getJournalsByDate(Date date);
+    void add(Journal journal);
     List<Journal> getAllJournals();
-    void clear(User user);
+    List<Journal> getJournalsByUser(User user);
+    List<Journal> getJournalsByDate(LocalDate date);
+    Journal getJournal(LocalDate date, User user);
+    void delete(User user);
 }
