@@ -1,6 +1,9 @@
 package bunos.study.practiceapplication.controller.rest;
 
+import bunos.study.practiceapplication.domain.dto.UserData;
+import bunos.study.practiceapplication.domain.model.Role;
 import bunos.study.practiceapplication.domain.model.User;
+import bunos.study.practiceapplication.service.RoleService;
 import bunos.study.practiceapplication.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -13,28 +16,13 @@ import java.util.List;
 public class UserController {
     private UserService userService;
 
-    @PostMapping("/add")
-    public void addUser(@RequestBody User user) {
-        userService.add(user);
-    }
-
-    @DeleteMapping("/remove/{id}")
-    public void removeUser(@PathVariable long id) {
-        userService.remove(userService.getById(id));
-    }
-
-    @PutMapping("/update/{id}")
-    public User updateUser(@PathVariable long id) {
-        return userService.update(userService.getById(id));
-    }
-
-    @GetMapping("/{id}")
-    public User getUserById(@PathVariable long id) {
-        return userService.getById(id);
-    }
-
     @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
+    }
+
+    @GetMapping("/roles")
+    public List<Role> getRolesByUser(@RequestBody UserData userData) {
+        return userService.getUserRoles(userData);
     }
 }

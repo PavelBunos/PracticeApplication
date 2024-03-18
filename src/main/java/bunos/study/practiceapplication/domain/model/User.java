@@ -10,6 +10,7 @@ import java.util.Collection;
 @Table(name="t_users")
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

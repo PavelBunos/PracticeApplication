@@ -9,6 +9,32 @@
     margin: 0;
 }
 
+.back-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(to bottom, #3498db, #217dbb);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+}
+
+.back-button:hover {
+    background: linear-gradient(to bottom, #217dbb, #3498db);
+}
+
+.back-button img {
+    width: 20px;
+    height: 20px;
+}
+
 body {
     font-family: 'Arial', sans-serif;
     background-color: #f4f4f4;
@@ -118,6 +144,14 @@ td {
     background-color: white;
 }
 
+tr:hover td{
+    background-color: #ddd;
+}
+
+.selected-row {
+    color: #3498db;
+}
+
 .section {
     background-color: #f9f9f9;
     padding: 20px;
@@ -190,6 +224,6 @@ option:checked {
     z-index: 10;
 }
 
-.db-disconnected td {
+.db-disconnected {
     color: #ce3a5a;
 }

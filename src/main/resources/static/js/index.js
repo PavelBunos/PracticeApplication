@@ -1,6 +1,12 @@
 const api = window.axios;
 
-
+const BackButton = Vue.component('BackButton', {
+    template: `
+    <a href="/practiceApp/home" class="back-button">
+        <img src="img/left.png" alt="Back">
+    </a>
+    `,
+})
 
 Vue.component('database-row', {
     props: ['database'],
@@ -36,9 +42,204 @@ Vue.component('databases-table', {
     }
 })
 
+Vue.component('user-row', {
+    props: ['user', 'setSelectedUser'],
+    template:
+        '<tr :class="rowClass" :user="user" @click="select()">' +
+        '<td>{{user.username}}</td><td>{{user.password}}</td><td>{{user.roles[0].name}}</td>' +
+        '</tr>',
+    data() {
+        return {
+            rowClass: ""
+        }
+    },
+    methods: {
+        select() {
+            this.setSelectedUser(this);
+        }
+    }
+})
+
+Vue.component('users-table', {
+    props: ['users', 'updateUsers', 'setSelectedUser'],
+    template:
+        '<table>' +
+        '<thead>' +
+        '<tr>' +
+        '<td>логин</td><td>пароль</td><td>роль</td>' +
+        '</tr>' +
+        '</thead>' +
+        '<tbody>' +
+        '<user-row v-for="user in users" :user="user" :key="user.userid" :setSelectedUser="setSelectedUser"></user-row>' +
+        '</tbody>' +
+        '</table>',
+    methods: { },
+    created: function () {
+        this.updateUsers();
+    }
+})
+
+const AdminComponent = Vue.component('AdminComponent', {
+    template: `
+    <div class="page">
+        <BackButton></BackButton>
+        <div class="block">
+            <div class="section">
+                <h2>Пользователи</h2>
+                <div class="table-container">
+                    <users-table :users="users" :updateUsers="updateUsers" :setSelectedUser="setSelectedUser"></users-table>
+                </div>
+                <div class="container">
+                    <button @click="openAddDialog()">Добавить</button>
+                    <button @click="deleteUser()">Удалить</button>
+                    <button @click="updateUsers()">Обновить</button>
+                </div>    
+            </div>
+        </div>
+        <div class="dialog" v-if="isOpen">
+            <img src="img/close.png" class="close-icon" @click="closeDialog()">
+            <h3>Информация пользователя</h3>
+
+            <label>Логин</label><input type="text" v-model="userData.username" v-if="!isEditMode">
+            <label>Пароль</label><input type="text" v-model="userData.password">
+            <label>Роль</label><select v-model="userData.role">
+                <option v-for="role in roles" :role="role" :key="role.roleid">{{role.name}}</option>
+            </select>
+            
+            <button @click="saveNewUser()">Добавить</button>
+        </div>
+        <div v-if="isOpen" class="overlay"></div>
+    </div>
+    `,
+    created() {
+        this.getAllRoles();
+    },
+    data() {
+        return {
+            userData: {
+                username: null,
+                password: null,
+                role: null
+            },
+            selectedUserRow: null,
+            users: [],
+            isOpen: false,
+            selectedRole: null,
+            roles: []
+        }
+    },
+    methods: {
+        setSelectedUser(userRow) {
+            this.userData = {
+                username: userRow.user.username,
+                password: userRow.user.password,
+                role: userRow.user.roles[0].name,
+            };
+            console.log(this.userData);
+
+            this.dropSelectedUser();
+            userRow.rowClass = "selected-row";
+            this.selectedUserRow = userRow;
+        },
+        dropSelectedUser() {
+            if (this.selectedUserRow != null) {
+                this.selectedUserRow.rowClass = "";
+                this.selectedUserRow = null;
+            }
+        },
+        dropUserData() {
+            this.userData = {
+                username: null,
+                password: null,
+                role: null
+            }
+        },
+        deleteUser() {
+            if (this.selectedUserRow != null) {
+                if (this.userData.username === "admin") {
+                    alert("Нельзя удалять admin!");
+                    this.dropSelectedUser();
+                    return;
+                }
+
+                api.post("/practiceApp/remove", this.userData).then(result => {
+                    this.dropSelectedUser();
+                    this.updateUsers();
+                    alert(result.data.data);
+                }).catch(error => {
+                    alert("Error! " + error);
+                });
+                this.dropUserData();
+            }
+        },
+        saveNewUser() {
+            if (this.userData.username != null && this.userData.password != null && this.userData.role != null) {
+                api.post("/practiceApp/registration", this.userData).then(result => {
+                    this.dropSelectedUser();
+                    this.updateUsers();
+                    alert(result.data.data);
+                }).catch(error => {
+                    alert("Error! " + error);
+                });
+            }
+        },
+        getAllRoles() {
+            api.get("/practiceApp/roles").then(response => {
+                this.roles = [];
+                const data = response.data;
+                data.forEach(role => {
+                    this.roles.push(role);
+                })
+            })
+        },
+        updateUsers() {
+            api.get("/practiceApp/users").then(response => {
+                this.users = [];
+                const data = response.data;
+                data.forEach(user => {
+                    this.users.push(user);
+                })
+            })
+        },
+        openAddDialog() {
+            this.dropUserData();
+            this.isOpen = true;
+        },
+        closeDialog() {
+            this.dropUserData();
+            this.isOpen = false;
+        }
+    }
+})
+
+const HomePageComponent = Vue.component('HomePageComponent', {
+    template: `
+    <div class="home page">
+        <div class="block">
+            <ul>
+              <li><a href="/practiceApp/backup">Backup</a></li>
+              <li><a href="/practiceApp/migration">Migration</a></li>
+              <li><a href="/practiceApp/logs">Logs</a></li>
+              <li><a href="/practiceApp/settings">Settings</a></li>
+              <li><a href="/practiceApp/admin">Admin</a></li>
+            </ul>
+        </div>
+    </div>
+    `,
+    methods: {
+
+    },
+    data() {
+        return {
+
+        }
+    }
+})
+
 const SettingsComponent = Vue.component('SettingsComponent', {
     template: `
         <div class="page">
+        <BackButton></BackButton>
         <div class="block">
         <h1>Настройки</h1>
 
@@ -58,7 +259,6 @@ const SettingsComponent = Vue.component('SettingsComponent', {
                 <button @click="deleteDatabase()">Удалить</button>
                 <button @click="openEditDialog()">Изменить</button>
             </div>
-
         </div>
 
         <div class="dialog" v-if="isOpen">
@@ -203,9 +403,14 @@ const SettingsComponent = Vue.component('SettingsComponent', {
 Vue.component('database-option', {
     props: ['database'],
     template:
-        '<option>' +
+        '<option :class="dbRowClass">' +
         '{{database.name}}' +
-        '</option>'
+        '</option>',
+    computed: {
+        dbRowClass() {
+            return this.database.connectionStatus ? "" : "db-disconnected";
+        }
+    }
 });
 
 Vue.component('databases-list', {
@@ -237,10 +442,11 @@ Vue.component('databases-list', {
 const BackupComponent = Vue.component('BackupComponent', {
     template: `
     <div class="page">
-         <div class="block">
+        <BackButton></BackButton>
+        <div class="block">
             <h2>База данных</h2>
             <databases-list :databases="databases" @selected="handleSelected"></databases-list>
-         </div>
+        </div>
         <div class="block">
             <h1>Копирование и восстановление</h1>
     
@@ -409,7 +615,7 @@ const LoginComponent = Vue.component('LoginComponent', {
             axios.post('/practiceApp/auth', credentials).then(response => {
                 localStorage.setItem('Authorization', response.data.token);
                 setCookie('Authorization', response.data.token, 1);
-                router.push('/practiceApp/settings');
+                router.push('/practiceApp/home');
             }).catch(error => {
                 alert('Ошибка авторизации: ' + error);
             });
@@ -433,6 +639,13 @@ const routes = [
         }
     },
     {
+        path: '/practiceApp/admin',
+        component: AdminComponent,
+        meta: {
+            title: 'Admin-panel'
+        }
+    },
+    {
         path: '/practiceApp/backup',
         component: BackupComponent,
         meta: {
@@ -444,6 +657,13 @@ const routes = [
         component: LoginComponent,
         meta: {
             title: 'Login'
+        }
+    },
+    {
+        path: '/practiceApp/home',
+        component: HomePageComponent,
+        meta: {
+            title: 'Home'
         }
     }
 ];
@@ -457,7 +677,7 @@ function setCookie(name, value, hours) {
     var expires = "";
     if (hours) {
         var date = new Date();
-        date.setTime(date.getTime() + (hours * 60 * 1000));
+        date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
     }
     document.cookie = name + "=" + (value || "") + expires + "; path=/";

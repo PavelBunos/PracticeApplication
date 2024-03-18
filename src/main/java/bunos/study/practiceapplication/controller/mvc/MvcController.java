@@ -15,7 +15,7 @@ public class MvcController {
         return "index.html";
     }
 
-    @GetMapping({"/admin", "/settings"})
+    @GetMapping({"/admin", "/settings", "/settings/connections"})
     @PreAuthorize("hasRole('ADMIN')")
     public String admin() {
         return "index.html";

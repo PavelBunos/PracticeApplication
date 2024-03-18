@@ -1,8 +1,10 @@
 package bunos.study.practiceapplication.service;
 
 import bunos.study.practiceapplication.domain.model.Role;
+import bunos.study.practiceapplication.domain.model.User;
 import bunos.study.practiceapplication.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
