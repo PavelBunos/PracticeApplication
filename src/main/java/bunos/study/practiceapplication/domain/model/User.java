@@ -1,9 +1,9 @@
 package bunos.study.practiceapplication.domain.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.Collection;
 

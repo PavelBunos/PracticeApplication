@@ -1,5 +1,7 @@
 package bunos.study.practiceapplication.domain.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

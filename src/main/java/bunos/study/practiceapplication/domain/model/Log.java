@@ -1,5 +1,7 @@
 package bunos.study.practiceapplication.domain.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,8 +10,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.sql.Time;
-import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity

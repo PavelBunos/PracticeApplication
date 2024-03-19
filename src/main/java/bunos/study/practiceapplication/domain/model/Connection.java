@@ -1,7 +1,10 @@
 package bunos.study.practiceapplication.domain.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Builder
 public class Connection {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,10 +21,10 @@ public class Connection {
     private long connectionId;
 
     @JoinColumn(name="f_database_id")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Database fromDatabase;
 
     @JoinColumn(name="s_database_id")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     private Database toDatabase;
 }

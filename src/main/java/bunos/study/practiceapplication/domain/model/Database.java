@@ -1,5 +1,7 @@
 package bunos.study.practiceapplication.domain.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,7 +12,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 @Slf4j
 @Entity
 @Table(name="t_databases")
@@ -51,7 +52,7 @@ public class Database {
             }
         }
         catch (SQLException ex) {
-            log.error(ex.getMessage());
+            log.error(getName() + ": не удаётся подключить!");
         }
         return false;
     }

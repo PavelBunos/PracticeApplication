@@ -1,6 +1,4 @@
 server:
-  tomcat:
-    cookie-processor: org.apache.tomcat.util.http.LegacyCookieProcessor
   port: 8080
   servlet:
     context-path: /practiceApp

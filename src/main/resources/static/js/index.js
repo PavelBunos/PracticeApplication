@@ -34,9 +34,7 @@ Vue.component('databases-table', {
         '<database-row v-for="database in databases" :database="database" :key="database.databaseId"></database-row>' +
         '</tbody>' +
         '</table>',
-    methods: {
-
-    },
+    methods: {},
     created: function () {
         this.updateDb();
     }
@@ -73,7 +71,7 @@ Vue.component('users-table', {
         '<user-row v-for="user in users" :user="user" :key="user.userid" :setSelectedUser="setSelectedUser"></user-row>' +
         '</tbody>' +
         '</table>',
-    methods: { },
+    methods: {},
     created: function () {
         this.updateUsers();
     }
@@ -95,6 +93,7 @@ const AdminComponent = Vue.component('AdminComponent', {
                     <button @click="updateUsers()">Обновить</button>
                 </div>    
             </div>
+            <a href="/practiceApp/settings">Settings</a>
         </div>
         <div class="dialog" v-if="isOpen">
             <img src="img/close.png" class="close-icon" @click="closeDialog()">
@@ -220,19 +219,14 @@ const HomePageComponent = Vue.component('HomePageComponent', {
               <li><a href="/practiceApp/backup">Backup</a></li>
               <li><a href="/practiceApp/migration">Migration</a></li>
               <li><a href="/practiceApp/journalization">Logs</a></li>
-              <li><a href="/practiceApp/settings">Settings</a></li>
               <li><a href="/practiceApp/admin">Admin</a></li>
             </ul>
         </div>
     </div>
     `,
-    methods: {
-
-    },
+    methods: {},
     data() {
-        return {
-
-        }
+        return {}
     }
 })
 
@@ -260,6 +254,7 @@ const SettingsComponent = Vue.component('SettingsComponent', {
                 <button @click="openEditDialog()">Изменить</button>
             </div>
         </div>
+        <a href="/practiceApp/connections-settings">Connections</a>
 
         <div class="dialog" v-if="isOpen">
             <img src="img/close.png" class="close-icon" @click="closeDialog()">
@@ -367,10 +362,10 @@ const SettingsComponent = Vue.component('SettingsComponent', {
 
             this.newDatabase = {
                 name: null,
-                    hostname: null,
-                    port: null,
-                    user: null,
-                    password: null
+                hostname: null,
+                port: null,
+                user: null,
+                password: null
             }
         },
         addDatabase() {
@@ -516,6 +511,11 @@ const BackupComponent = Vue.component('BackupComponent', {
     methods: {
         startBackup() {
             if (this.backupPath.length > 0 && this.backupArguments) {
+                if (this.selectedDatabase == null) {
+                    alert("Выберите базу данных!");
+                    return;
+                }
+
                 let dumpData = {
                     path: this.backupPath,
                     dumpFileName: "",
@@ -563,6 +563,11 @@ const BackupComponent = Vue.component('BackupComponent', {
         },
         startRestore() {
             if (this.restoreArguments && this.selectedBackup) {
+                if (this.selectedDatabase == null) {
+                    alert("Выберите базу данных!");
+                    return;
+                }
+
                 let restoreData = {
                     path: this.restorePath,
                     dumpFileName: this.selectedBackup,
@@ -776,7 +781,335 @@ const LogsComponent = Vue.component('LogsComponent', {
     }
 })
 
+Vue.component("db-table-option", {
+    props: ['table'],
+    template: `
+    <option>{{table.name}}</option>
+    `,
+})
+
+const MigrationComponent = Vue.component("MigrationComponent", {
+    template: `
+    <div class="page">
+        <BackButton></BackButton>
+        <div class="block">
+            <h1>Миграции</h1>
+            <div class="section">
+                <h2>Выбор пары баз данных</h2>
+                <connections-table :connections="connections" :selectConnection="selectConnection"></connections-table>
+                <button @click="openDialog()">Продожить</button>
+            </div>
+        </div>
+        <div class="dialog" v-if="isOpen">
+            <img src="img/close.png" class="close-icon" @click="closeDialog()">
+            <h3>Выберите таблицы</h3>
+            
+            <label>Таблица источника</label>
+            <select class="databases-list" v-model="selectedSource" @change="sourceSelected()">
+                <db-table-option v-for="table in sourceTables" :table="table" :key="table.name"></db-table-option>
+            </select>
+            <label v-if="selectedSource">Таблица приёмника</label>
+            <select v-if="selectedSource" class="databases-list" v-model="selectedOutput">
+                <db-table-option v-for="table in outputTables" :table="table" :key="table.name"></db-table-option>
+            </select>
+            
+            <button @click="start()">Начать</button>
+        </div>
+        <div v-if="isOpen" class="overlay"></div>
+    </div>
+    `,
+    data() {
+        return {
+            isOpen: false,
+            connections: [],
+            sourceTables: [],
+            outputTables: [],
+            selectedConnectionRow: null,
+            connectionData: {
+                databaseSource: null,
+                databaseOutput: null
+            },
+            selectedSource: null,
+            selectedOutput: null
+        }
+    },
+    created() {
+        this.updateConnections();
+    },
+    methods: {
+        start() {
+            if (this.selectedSource == null && this.selectedOutput == null) {
+                alert("Выберите таблицы!");
+                return
+            }
+
+            this.closeDialog();
+
+            let migrationData = {
+                tablenameSource: this.selectedSource,
+                tablenameOutput: this.selectedOutput,
+                connection: this.selectedConnectionRow.connection
+            }
+
+            console.log(migrationData);
+
+            api.post("/practiceApp/migration/start", migrationData).then(result => {
+                alert(result.data.data);
+            });
+        },
+        getTables(databaseName) {
+            let tables = [];
+            api.get("/practiceApp/databases/database/tables/" + databaseName).then(result => {
+                const data = result.data.data;
+                data.forEach(table => {
+                    tables.push(table);
+                });
+            });
+
+            return tables;
+        },
+        sourceSelected() {
+            this.outputTables = this.getTables(this.connectionData.databaseOutput);
+        },
+        openDialog() {
+            if (this.connectionData.databaseSource == null) {
+                alert("Выберите соединение!");
+                return;
+            }
+
+            this.sourceTables = this.getTables(this.connectionData.databaseSource);
+            this.isOpen = true;
+        },
+        closeDialog() {
+            this.isOpen = false;
+        },
+        updateConnections() {
+            this.connections = [];
+            api.get("/practiceApp/connections").then(result => {
+                const data = result.data;
+                data.forEach(connection => {
+                    if (connection.fromDatabase.connectionStatus && connection.toDatabase.connectionStatus) {
+                        this.connections.push(connection);
+                    }
+                });
+            });
+        },
+        dropSelection() {
+            if (this.selectedConnectionRow != null) {
+                this.selectedConnectionRow.removeSelection();
+                this.selectedConnectionRow = null;
+            }
+
+            this.connectionData = {
+                databaseSource: null,
+                databaseOutput: null
+            }
+        },
+        selectConnection(connectionRow) {
+            if (this.selectedConnectionRow === connectionRow) {
+                return;
+            }
+
+            this.dropSelection();
+            this.selectedConnectionRow = connectionRow;
+
+            this.connectionData = {
+                databaseSource: this.selectedConnectionRow.connection.fromDatabase.name,
+                databaseOutput: this.selectedConnectionRow.connection.toDatabase.name
+            }
+        }
+    }
+});
+
+Vue.component('connection-row', {
+    props: ['connection', 'selectConnection'],
+    template: `
+    <tr :class="rowClass" @click="changeSelection()">
+    <td>{{connection.fromDatabase.name}}<img class="row-warning-icon" v-if="!this.connection.fromDatabase.connectionStatus" src="img/warning.png"></td>
+    <td>{{connection.toDatabase.name}}<img class="row-warning-icon" v-if="!this.connection.toDatabase.connectionStatus" src="img/warning.png"></td>
+    </tr>
+    `,
+    created() {
+        if (this.connection.fromDatabase.connectionStatus && this.connection.toDatabase.connectionStatus) {
+            this.isConnected = true;
+        } else {
+            this.isConnected = false;
+            this.rowClass = "db-disconnected";
+        }
+    },
+    methods: {
+        removeSelection() {
+            if (this.isConnected) {
+                this.rowClass = "";
+            } else {
+                this.rowClass = "db-disconnected";
+            }
+        },
+        changeSelection() {
+            this.rowClass = "selected-row";
+            this.selectConnection(this);
+        }
+    },
+    data() {
+        return {
+            isConnected: false,
+            rowClass: ""
+        }
+    },
+})
+
+Vue.component('connections-table', {
+    props: ['connections', 'selectConnection'],
+    template: `
+    <table>
+      <thead>
+      <tr>
+      <td>Источник</td>
+      <td>Приёмник</td>
+      </tr>
+      </thead>
+      <tbody>
+      <connection-row v-for="connection in connections" :connection="connection" :key="connection.connectionId" :selectConnection="selectConnection"></connection-row>
+      </tbody>
+    </table>
+    `,
+})
+
+const ConnecitonsComponent = Vue.component("ConnecitonsComponent", {
+    template: `
+    <div class="page">
+        <BackButton></BackButton>
+        <div class="block">
+            <h1>Настройки</h1>
+            <div class="section">
+                <h2>Соединения</h2>
+                <connections-table :connections="connections" :selectConnection="selectConnection"></connections-table>
+                <button @click="openDialog()">Добавить</button>
+                <button @click="updateConnections()">Обновить</button>
+                <button @click="deleteSelected()">Удалить</button>
+            </div>
+        </div>
+        <div class="dialog" v-if="isOpen">
+            <img src="img/close.png" class="close-icon" @click="closeDialog()">
+            <h3>Новое соединение</h3>
+
+            <label>Имя базы источника</label>
+            <select class="databases-list" v-model="connectionData.databaseSource">
+                <database-option v-for="database in databases" :database="database" :key="database.databaseId" />
+            </select>
+            <label>Имя базы приёмника</label>
+            <select class="databases-list" v-model="connectionData.databaseOutput">
+                <database-option v-for="database in databases" :database="database" :key="database.databaseId" />
+            </select>
+            
+            <button @click="addConnection()">Добавить</button>
+        </div>
+        <div v-if="isOpen" class="overlay"></div>
+    </div>
+    `,
+    data() {
+        return {
+            isOpen: false,
+            connections: [],
+            databases: [],
+            selectedConnectionRow: null,
+            connectionData: {
+                databaseSource: null,
+                databaseOutput: null
+            }
+        }
+    },
+    methods: {
+        openDialog() {
+            this.isOpen = true;
+            this.updateDatabases();
+        },
+        closeDialog() {
+            this.isOpen = false;
+        },
+        addConnection() {
+            console.log(this.connectionData);
+            if (this.connectionData.databaseSource != null && this.connectionData.databaseOutput != null) {
+                api.post("/practiceApp/connections/add", this.connectionData).then(result => {
+                    this.updateConnections();
+                    this.dropSelection();
+                });
+            } else {
+                alert("Заполните все поля!");
+            }
+        },
+        deleteSelected() {
+            if (this.selectedConnectionRow != null) {
+                api.post("/practiceApp/connections/remove", this.connectionData).then(result => {
+                    this.updateConnections();
+                    this.dropSelection();
+                })
+            } else {
+                alert("Выберите соединение!");
+            }
+        },
+        dropSelection() {
+            if (this.selectedConnectionRow != null) {
+                this.selectedConnectionRow.removeSelection();
+                this.selectedConnectionRow = null;
+            }
+
+            this.connectionData = {
+                databaseSource: null,
+                databaseOutput: null
+            }
+        },
+        selectConnection(connectionRow) {
+            if (this.selectedConnectionRow === connectionRow) {
+                return;
+            }
+            this.dropSelection();
+            this.selectedConnectionRow = connectionRow;
+
+            this.connectionData = {
+                databaseSource: this.selectedConnectionRow.connection.fromDatabase.name,
+                databaseOutput: this.selectedConnectionRow.connection.toDatabase.name
+            }
+        },
+        updateConnections() {
+            this.connections = [];
+            api.get("/practiceApp/connections").then(result => {
+                const data = result.data;
+                data.forEach(connection => {
+                    this.connections.push(connection);
+                });
+            });
+        },
+        updateDatabases() {
+            this.databases = [];
+            api.get("/practiceApp/databases").then(response => {
+                const data = response.data.data;
+                data.forEach(database => {
+                    this.databases.push(database);
+                })
+            })
+        }
+    },
+    created() {
+        this.updateConnections();
+    }
+});
+
 const routes = [
+    {
+        path: '/practiceApp/connections-settings',
+        component: ConnecitonsComponent,
+        meta: {
+            title: 'Settings'
+        }
+    },
+    {
+        path: '/practiceApp/migration',
+        component: MigrationComponent,
+        meta: {
+            title: 'Migration'
+        }
+    },
     {
         path: '/practiceApp/journalization',
         component: LogsComponent,

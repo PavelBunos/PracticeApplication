@@ -227,3 +227,9 @@ option:checked {
 .db-disconnected {
     color: #ce3a5a;
 }
+
+.row-warning-icon {
+    margin: 0 0 -2px 15px;
+    width: 17px;
+    height: 17px;
+}
