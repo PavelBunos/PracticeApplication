@@ -40,6 +40,11 @@ public class LogServiceImpl implements LogService {
     }
 
     @Override
+    public List<Log> getLogsByJournal(Journal journal) {
+        return logRepository.findAll().stream().filter(x -> x.getJournal().equals(journal)).toList();
+    }
+
+    @Override
     public List<Log> getLogsByData(String data) {
         List<Log> logs = new ArrayList<>();
 

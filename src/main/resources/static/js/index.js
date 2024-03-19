@@ -1,4 +1,5 @@
 const api = window.axios;
+const fileSaver = window.saveAs;
 
 const BackButton = Vue.component('BackButton', {
     template: `
@@ -722,6 +723,7 @@ const LogsComponent = Vue.component('LogsComponent', {
         <journals-list v-if="isUserSelected && journals.length > 0" :journals="journals" :selectJournal="selectJournal"></journals-list>
         <p v-if="journals.length === 0">Нет журналов</p>
         <logs-table :logs="logs" v-if="isJournalSelected"></logs-table>
+        <button v-if="isJournalSelected" @click="saveJournal()">Получить отчёт</button>
     </div>
     </div>
     `,
@@ -745,6 +747,17 @@ const LogsComponent = Vue.component('LogsComponent', {
         });
     },
     methods: {
+        saveJournal() {
+            api({
+                url: '/practiceApp/logs/save/' + this.selectedJournal + "_" + this.selectedUser,
+                method: 'GET',
+                responseType: 'blob',
+                data: this.selectedJournal,
+            }).then((response) => {
+                const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                fileSaver.saveAs(blob, 'logs.xlsx');
+            });
+        },
         selectUser(user) {
             this.selectedUser = user;
             this.isUserSelected = true;
